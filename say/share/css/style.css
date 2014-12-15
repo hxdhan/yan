@@ -1,0 +1,71 @@
+@charset "utf-8";
+/* CSS Document */
+body,div,ul,li,input,p,dl,dt,dd,table,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;}
+body{font-size:16px;font-family:"微软雅黑";background:#fff;}
+a{color:#000;}
+a,
+a:hover{text-decoration:none;}
+em,i,city{font-style:normal;}
+img{border:none;}
+.l{float:left;}
+.r{float:right;}
+ul{list-style-type:none;}
+.clear:after,
+.area:after{content:".";visibility:hidden;height:0;display:block;clear:both;}
+.clear,
+.area{zoom:1;}
+
+body{background-color:#dddfe0}
+.header {background-color:#2f2f2f;height:80px}
+.header-left{float:left}
+#logo{width:48px;height:48px;background-size:100%;margin:15px 5px 5px 15px}
+.logo-left{float:left}
+#tieer{width:30px;height:14px;background-size:100%;margin-top:15px}
+#slo{width:114px;height:14px;background-size:100%;margin-top:20px}
+.slo-all{float:right}
+.header-right{float:right}
+#download{width:82px;height:31px;background-size:100%;margin:25px 15px}
+.info{background-color:white;margin:20px 10px;height:360px;text-align:center;border-radius: 15px;}
+#user-bg{width:46px;height:46px;background-size:100%;margin-top:-20px}
+#user-image{width:40px;height:40px;background-size:100%;border-radius: 23px;margin-top:-12px;border: 3px solid white;}
+.user-name{position:absolute;top:110px;left:60px}
+#myimg{width:214px;height:214px;background-size:100%;margin-top:50px;border-radius: 107px;}
+#play-bg{width:39px;height:39px;background-size:100%;margin-top:-20px}
+#extra-left{width:20px;height:20px;background-size:100%;}
+.extra-info{margin-top:10px}
+.extra-left{float:left;margin-left:20px;color:#828282}
+.extra-right{float:right;color:#828282}
+.like{float:left;margin-right:20px}
+.ting{float:right;margin-right:20px}
+#like{width:20px;height:20px;background-size:100%;}
+#ting{width:20px;height:20px;background-size:100%;}
+#play{width:39px;height:39px;background-size:100%;margin-top:-40px}
+.user{position:absolute}
+.loc{position:absolute;right:10px;top:120px}
+#loc{width:109px;height:33px;background-size:100%}
+.loc-text{margin-top:-27px;margin-left:30px}
+.category{margin-top:10px}
+.map{background-color:white;margin:10px;height:75px}
+.recommand{height:240px;margin:10px 10px 10px;}
+.recommand-left{float:left;background-color:white;width:48%;height:240px;border-radius: 15px;}
+.recommand-right{float:right;background-color:white;width:48%;height:240px;border-radius: 15px;}
+#rec-user{width:39px;height:39px;background-size:100%;border-radius: 20px;}
+.rec-left{float:left;border-radius: 21px;background-color:#dcdcdc}
+.rec-time{color:#828282}
+.rec-right{float:right;margin-left:5px}
+.user-left{float:left;margin-left:10px;margin-top:10px}
+.rec-info{clear:both;text-align:center;}
+#rec-image{width:130px;height:130px;margin-top:5px;border-radius: 75px;}
+#rec-playbg{margin-top:-20px;width:28px;height:28px;background-size:100%;}
+.rec-play{margin-top:-28px;width:29px;height:29px;background-size:100%}
+.rec-like{float:left;margin-left:30px}
+.rec-liken{float:right;margin-right:30px;color:#909090;margin-top:5px}
+.rec-hr{border: 1px dashed #d8dfe2;margin:5px}
+#rc-text{width:30px;height:15px;background-size:100%;}
+.rc-text{margin-left:15px}
+.markerlnglat{width:16px;height:20px;background-size:100%;}
+.markerlnglat1{width:83px;height:18px;background-size:100%;position:absolute;top:5px}
+.mark{position:relative;width:250px;height:35px;}
+.marki{float:left;}
+
+.markspan{position:absolute;color:white;font-size:10px;width:80px;top:8px;left:30px}

@@ -1,0 +1,40 @@
+@charset "utf-8";
+/* CSS Document */
+body,div,ul,li,input,p,dl,dt,dd,table,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;}
+body{font-size:14px;font-family:"微软雅黑";background:#fff;}
+a{color:#000;}
+a,
+a:hover{text-decoration:none;}
+em,i,city{font-style:normal;}
+img{border:none;}
+.l{float:left;}
+.r{float:right;}
+ul{list-style-type:none;}
+.clear:after,
+.area:after{content:".";visibility:hidden;height:0;display:block;clear:both;}
+.clear,
+.area{zoom:1;}
+/*
+body{width:320px;margin:auto}
+.head{width:320px}
+
+
+*/
+.header{text-align:center;}
+#icon {margin-top:40px}
+#icon-yw {margin-top:-430px}
+.yuyan{text-align:center;margin-top:10px}
+.yuyan-yw{text-align:center;margin-top:-290px}
+.faxian{text-align:center;margin-top:20px}
+.faxian-yw{text-align:center;margin-top:20px}
+#yw{width:100%;background-size:100%}
+.iphone{text-align:center;margin-top:20px;width: 570px;position: relative;margin: 20px auto;}
+.iphone-yw{text-align:center;margin-top:220px;width: 570px;position: relative;margin: 20px auto;}
+.android{text-align:center;margin-top:10px;}
+#pop-up{position:absolute;right:100%;display:none;}
+.guanzhu{text-align:center;margin-top:50px;}
+
+
+.info{text-align:center}
+#lou {width:100%;margin-top:10px}
+.footer{text-align:center;margin-top:20px;margin-bottom:10px;color:#00baff}

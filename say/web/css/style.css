@@ -1,0 +1,45 @@
+@charset "utf-8";
+/* CSS Document */
+body,div,ul,li,input,p,dl,dt,dd,table,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;}
+body{font-size:10px;font-family:"微软雅黑";background:#fff;}
+a{color:#000;}
+a,
+a:hover{text-decoration:none;}
+em,i,city{font-style:normal;}
+img{border:none;}
+.l{float:left;}
+.r{float:right;}
+ul{list-style-type:none;}
+.clear:after,
+.area:after{content:".";visibility:hidden;height:0;display:block;clear:both;}
+.clear,
+.area{zoom:1;}
+/*
+body{width:320px;margin:auto}
+.head{width:320px}
+
+
+*/
+.header{text-align:center;}
+.icon-night{text-align:center;margin-top:-250px}
+.yuyan-night{text-align:center;margin-top:10px}
+.faxian-night{text-align:center;margin-top:10px}
+#icon {width:68px;height:68px;background-size:100%;margin-top:30px}
+.yuyan{text-align:center;margin-top:10px}
+#yuyan{width:52px;height:20px;background-size:100%}
+.faxian{text-align:center;margin-top:10px}
+#faxian{width:157px;height:16px;background-size:100%}
+#yw{width:100%;background-size:100%}
+.iphone{text-align:center;margin-top:20px;}
+.iphone-night{text-align:center;margin-top:110px;}
+#iphone{width:141px;height:44px;background-size:100%}
+.android{text-align:center;margin-top:10px;}
+#android{width:141px;height:44px;background-size:100%}
+.guanzhu{text-align:center;margin-top:50px;}
+#guanzhu{width:33px;height:8px;background-size:100%}
+#qq{width:7px;height:10px;background-size:100%}
+#sina{width:12px;height:10px;background-size:100%}
+.info{text-align:center}
+#lou {width:100%;margin-top:20px;background-size:100%}
+.footer{text-align:center;margin-top:20px;color:#00baff}
+#bu {width:87px;height:13px;background-size:100%}
