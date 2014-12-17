@@ -76,43 +76,46 @@ while ($column = $meta->fetch_field()) {
 } 
        
 call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
+$all_users = array();
+while($stmt->fetch()) {
+	$ele = array();
+	foreach($result as $key => $val) { 
+		$ele[$key] = $val;
+	}
+	$all_users[] = $ele;
+	
+}
 $results = array();
 $check = array();
-if (!($stmt1 = $mysqli->prepare("SELECT nickname,photo_url,photo_color,gender,birthday,description,expert_type FROM userinfo WHERE user_id = ?"))) {
+if (!($stmt = $mysqli->prepare("SELECT * FROM userinfo WHERE user_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 	
 }
 
-while($stmt->fetch()) {
+foreach($all_users as $u) {
 	//var_dump($result);
-	foreach($result as $key => $val) { 
-		$c[$key] = $val; 
-		if($key == 'author_id') {
-			$c['user_id'] = $c['author_id'];
-			unset($c['author_id']);
-			if (!$stmt1->bind_param("i", $val)) {
+	$c = array();
+	$c = array_merge($c, $u);
+	if (!$stmt->bind_param("i", $c['author_id'])) {
 				$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 				exit (json_encode($ret));
-			}
-			
-			if (!$stmt1->execute()) {
+	}
+	if (!$stmt->execute()) {
 				$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 				exit (json_encode($ret));
-			}
-			$stmt1->bind_result($nickname,$photo_url,$photo_color,$gender,$birthday,$description,$expert_type);
-			while($stmt1->fetch()) {
-				$c['nickname'] = $nickname;
-				$c['photo_url'] = $photo_url;
-				$c['photo_color'] = $photo_color;
-				$c['gender'] = $gender;
-				$c['birthday'] = $birthday;
-				$c['description'] = $description;
-				$c['expert_type'] = $expert_type;
-			}
-			
-		}
+	}
+	
+	$stmt->store_result();
+
+	$meta = $stmt->result_metadata();
+	$result = array();
+	while ($column = $meta->fetch_field()) {
+		 $bindVarsArray[] = &$result[$column->name];
 	} 
+	call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
+	$stmt->fetch();
+	$c = array_merge($c,$result);
 	
 	if(!isset($check[$c['user_id']]) ) {
 		$check[$c['user_id']] = $c;
@@ -130,7 +133,7 @@ foreach($check as $key=>$val) {
 	$results[] = $val;
 }
 
-$stmt1->close();
+
 $stmt->close();
 
 $mysqli->close();
@@ -138,5 +141,5 @@ $mysqli->close();
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['users'] = $results;
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));
 
