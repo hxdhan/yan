@@ -17,12 +17,16 @@ $longitude = $_POST['longitude'] + 0 ;
 $latitude = $_POST['latitude'] + 0 ;
 
 
-$distance = 5.0;
+$distance = 10.0;
 
 
 $R = 6371;
 
 $count = 20;
+if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
+
+	$count = $_POST['count'] + 0 ;
+}
 
 $maxLat = $latitude + rad2deg($distance/$R);
 
@@ -48,13 +52,13 @@ FROM
 		AND longitude BETWEEN ? And ?	 
 	) As m  
 	WHERE acos(sin(?)*sin(radians(m.latitude)) + cos(?)*cos(radians(m.latitude))*cos(radians(m.longitude)-?)) * ? < ?
-	ORDER BY distance ASC"))) {
+	ORDER BY distance ASC limit ? "))) {
 $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 exit (json_encode($ret));	
 
 }
 				
-if (!$stmt->bind_param("dddidddddddid",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance)) {
+if (!$stmt->bind_param("dddidddddddidi",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance, $count)) {
 	$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 	exit (json_encode($ret));
 }
@@ -85,8 +89,12 @@ while($stmt->fetch()) {
 	$all_users[] = $ele;
 	
 }
+
+$stmt->close();
+
 $results = array();
 $check = array();
+
 if (!($stmt = $mysqli->prepare("SELECT * FROM userinfo WHERE user_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
@@ -94,36 +102,47 @@ if (!($stmt = $mysqli->prepare("SELECT * FROM userinfo WHERE user_id = ?"))) {
 }
 
 foreach($all_users as $u) {
-	//var_dump($result);
+	
 	$c = array();
+	
 	$c = array_merge($c, $u);
-	if (!$stmt->bind_param("i", $c['author_id'])) {
-				$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
-				exit (json_encode($ret));
-	}
-	if (!$stmt->execute()) {
-				$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-				exit (json_encode($ret));
-	}
 	
-	$stmt->store_result();
+	if(!isset($check[$c['author_id']]) ) {
+		$aid = $c['author_id'];
+		if (!$stmt->bind_param("i", $aid)) {
+					$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+					exit (json_encode($ret));
+		}
+		if (!$stmt->execute()) {
+					$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+					exit (json_encode($ret));
+		}
+		
+		$stmt->store_result();
 
-	$meta = $stmt->result_metadata();
-	$result = array();
-	while ($column = $meta->fetch_field()) {
-		 $bindVarsArray[] = &$result[$column->name];
-	} 
-	call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
-	$stmt->fetch();
-	$c = array_merge($c,$result);
-	
-	if(!isset($check[$c['user_id']]) ) {
-		$check[$c['user_id']] = $c;
+		$meta = $stmt->result_metadata();
+		$bindVarsArray = array();
+		$result = array();
+		while ($column = $meta->fetch_field()) {
+			 $bindVarsArray[] = &$result[$column->name];
+		} 
+		call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
+		
+		while($stmt->fetch()) {
+			$ele = array();
+			foreach($result as $key => $val) {
+				$ele[$key] = $val;
+			}
+			
+			$c = array_merge($c,$ele);
+		}
+		
+		$check[$c['author_id']] = $c;
 		
 	}
 	else {
-		if( $check[$c['user_id']]['time'] < $c['time']) {
-			$check[$c['user_id']]['time'] = $c['time'];
+		if( $check[$c['author_id']]['time'] < $c['time']) {
+			$check[$c['author_id']]['time'] = $c['time'];
 		}
 	}
 	unset($c);
