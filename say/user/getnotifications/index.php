@@ -86,17 +86,27 @@ while($stmt->fetch()) {
 					}
 				}
 				else {
-					print_r($mysqli->error);
+					printf("%s", $mysqli->error);
 				}
 		}
 		elseif($key == 'message_id' && $val != 0) {
 			if($get_message = $mysqli->query("select m.*,u.* from message m , userinfo u where m.author_id = u.user_id and m.message_id = {$val}")) {
-				if($get_message ->num_rows ==1) {
+				if($get_message ->num_rows == 1) {
 					$message = $get_message->fetch_assoc();
 					$message['time'] = $message['time'] + 0;
 					$message['new_time'] = $message['new_time'] + 0;
 					$message['like_status'] = get_like_status($message['message_id'],$myid);
 					$ele['message'] = $message;
+				}
+			}
+		}
+		elseif($key == 'wall_id' && $val != 0) {
+			if($get_wall = $mysqli->query("select * from msgwall where wall_id = {$val} ")) {
+				if($get_wall->num_rows == 1) {
+					$wall = $get_wall->fetch_assoc();
+					$wall['favourate_count'] = get_wallfavourate_count($wall['wall_id']);
+					$wall['message_count'] = get_wallmsg_count($wall['wall_id']);
+					$ele['wall'] = $wall;
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include ('../../header.php');
 
 if(!check_login()) {
@@ -62,9 +62,4 @@ $mysqli->close();
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 
-
-
 exit (json_encode($ret));
-  
- 
-?>

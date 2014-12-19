@@ -114,7 +114,7 @@ if(isset($_POST['wall_id']) &&  $_POST['wall_id'] != '') {
 $wall_name = '';
 
 if($wall_id > 0) {
-	if (!($stmt = $mysqli->prepare("select name from msgwall where wall_id = ?"))) {
+	if (!($stmt = $mysqli->prepare("select owner_userid, name from msgwall where wall_id = ?"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 		
@@ -129,9 +129,11 @@ if($wall_id > 0) {
 		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 	}
-	$stmt->bind_result($wall_name);
+	$stmt->bind_result($owner_user, $wall_name);
 	$stmt->fetch();
 	$stmt->close();
+	
+	
 }
 
 if (!($stmt = $mysqli->prepare("INSERT INTO message (author_id, category_id, voice_url, duration, longitude, latitude, time, smile_id, original_message_id, image_url, image_color, text, new_time, platform,wall_id,wall_name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))) {
@@ -194,6 +196,94 @@ $stmt->close();
 //update user score
 update_user_point($user_id, 3);
 
+if($wall_id > 0) {
+	//notification
+	
+	if($owner_user != $user_id) {
+		$n_type = $noti_type['wall_new'];
+		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $owner_user AND active_userid = $user_id AND type = '$n_type' AND wall_id = $wall_id ")) {
+			if($rets->num_rows > 0) {
+				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $owner_user AND active_userid = $user_id AND type = '$n_type' AND wall_id = $wall_id ")) {
+					printf("Error: %s\n", $mysqli->error);
+				}
+				
+			}
+		}
+		else {
+			printf("Error: %s\n", $mysqli->error);
+		}
+		
+		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($owner_user, $user_id, $wall_id, '$n_type', $time)")) {
+			printf("Error: %s\n", $mysqli->error);
+		}
+		
+	}
+	
+	//send all favourate user
+	$fav_users = array();
+	if($get_favourate = $mysqli->query("select user_id from msgwallfavourates where wall_id = $wall_id")) {
+		while($favourate = $get_favourate->fetch_row()) {
+			$fav_users[] = $favourate[0];
+		}
+	}
+	else {
+			printf("Error: %s\n", $mysqli->error);
+	}
+	
+	foreach($fav_users as $fav_userid) {
+		if($fav_userid != $user_id) {
+			$n_type = $noti_type['fav_wall_new'];
+			if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $owner_user AND type = '$n_type' AND wall_id = $wall_id ")) {
+			if($rets->num_rows > 0) {
+				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $owner_user AND type = '$n_type' AND wall_id = $wall_id ")) {
+					printf("Error: %s\n", $mysqli->error);
+				}
+				
+			}
+		}
+		else {
+			printf("Error: %s\n", $mysqli->error);
+		}
+		
+		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($fav_userid, $owner_user, $wall_id, '$n_type', $time)")) {
+			printf("Error: %s\n", $mysqli->error);
+		}
+		}
+	}
+}
+
+//notify follow user
+$follow_users = array();
+if($get_follow = $mysqli->query("select follow_userid from userfollow where user_id = $user_id")) {
+	while($follow = $get_follow->fetch_row()) {
+		$follow_users[] = $follow[0];
+	}
+}
+else {
+		printf("Error: %s\n", $mysqli->error);
+}
+
+foreach($follow_users as $follow_id) {
+	if($follow_id != $user_id) {
+		$n_type = $noti_type['post'];
+		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
+		if($rets->num_rows > 0) {
+			if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
+				printf("Error: %s\n", $mysqli->error);
+			}
+			
+		}
+	}
+	else {
+		printf("Error: %s\n", $mysqli->error);
+	}
+	
+	if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, message_id, type, time) VALUES ($follow_id, $user_id, $message_id, '$n_type', $time)")) {
+		printf("Error: %s\n", $mysqli->error);
+	}
+	}
+}
+
 
 if (!($stmt = $mysqli->prepare("SELECT m.*,u.* FROM message m,userinfo u  WHERE m.author_id = u.user_id and message_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -223,26 +313,61 @@ call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
 $stmt->fetch();
 
 $stmt->close();
-$mysqli->close();
-
-//$r = array();
-
-//foreach ($result as $key => $value) {
-  //      $r[$key] = $value;
-    //}
-
-//var_dump($r);
 
 
-
+//push 
+if($wall_id > 0) {
+	// if($get_nick = $mysqli->query("SELECT nickname FROM userinfo where user_id = $user_id")) {
+		// $nickname = $get_nick->fetch_row()[0];
+	// }
+	// else {
+			// printf("Error: %s\n", $mysqli->error);
+	// }
+	if($get_push = $mysqli->query("SELECT push_registration FROM user where user_id = $owner_user")) {
+		$push_registration = $get_push->fetch_row()[0];
+	}
+	else {
+			printf("Error: %s\n", $mysqli->error);
+	}
+	if(!empty($push_registration)) {
+		$data = '';
+		$send_no = get_push_id();
 	
-	//$ret = array();
+		$data.= 'sendno='.$send_no;
+	
+		$data.= '&app_key='.$app_key;
+		$data.= '&receiver_type='.$receive_type;
+		$data.= '&receiver_value='.$receive_value;
+	
+		$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
+	
+		$data.='&verification_code='.md5($verification_code);
+		$data.='&msg_type='.$msg_type;
+		$ca['n_content'] = '有人在你的墙上贴贴儿';
+		$ca["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'wallnew');
+		$data.='&msg_content='.json_encode($ca);
+		$data.='&platform='.$platform;
+		$data.='&apns_production='.$apns_production;
+	
+		$ch = curl_init();
+	
+		curl_setopt($ch,CURLOPT_URL,$push_url);
+		curl_setopt($ch,CURLOPT_POST,1);
+	
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//$response = curl_exec($ch);
+		//echo $response;
+		curl_exec($ch);
+	}
+	
+}
+
+
+$mysqli->close();
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['message'] = $result;
 
 
-exit (json_encode($ret));
-  
- 
-?>
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

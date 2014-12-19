@@ -47,7 +47,7 @@ if (!$stmt->execute()) {
 	exit (json_encode($ret));
 }
 
-//$stmt->store_result();
+$stmt->store_result();
 
 $meta = $stmt->result_metadata();
 
@@ -62,7 +62,8 @@ while($stmt->fetch()) {
 	foreach($result as $key => $val) { 
 		$e[$key] = $val;
 	}
-	
+	$e['favourate_count'] = get_wallfavourate_count($e['wall_id']);
+	$e['message_count'] = get_wallmsg_count($e['wall_id']);
 	$walls[] = $e;
 	unset($e);
 
@@ -77,4 +78,4 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['walls'] = $walls;
 
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

@@ -43,7 +43,7 @@ if (!$stmt->execute()) {
 	exit (json_encode($ret));
 }
 
-//$stmt->store_result();
+$stmt->store_result();
 
 $meta = $stmt->result_metadata();
 

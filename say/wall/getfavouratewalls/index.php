@@ -69,4 +69,4 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['walls'] = $results;
 
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

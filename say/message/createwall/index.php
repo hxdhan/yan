@@ -156,6 +156,9 @@ $stmt->fetch();
 
 $stmt->close();
 
+$result['favourate_count'] = 0;
+$result['message_count'] = 0;
+
 //update user score
 update_user_point($user_id, 5);
 

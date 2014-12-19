@@ -194,11 +194,14 @@ if($get_author = $mysqli->query("SELECT author_id FROM message WHERE message_id 
 		$n_type = $noti_type['com'];
 		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $author AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
 			if($rets->num_rows > 0) {
-				if($mysqli->query("DELETE FROM usrnotification WHERE user_id = $author AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
-					
+				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $author AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
+					printf("Error: %s\n", $mysqli->error);
 				}
-				//error ??
+				
 			}
+		}
+		else {
+			printf("Error: %s\n", $mysqli->error);
 		}
 		
 		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, message_id, type, time) VALUES ($author, $user_id, $message_id, '$n_type', $time)")) {

@@ -177,7 +177,9 @@ if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $follow
 		if($mysqli->query("DELETE FROM usrnotification WHERE user_id = $follow AND active_userid = $user_id AND type = '$n_type'")) {
 			
 		}
-		//error ??
+		else {
+			printf("Error: %s\n", $mysqli->error);
+		}
 	}
 }
 

@@ -166,6 +166,9 @@ $stmt->fetch();
 
 $stmt->close();
 
+$result['favourate_count'] = get_wallfavourate_count($result['wall_id']);
+$result['message_count'] = get_wallmsg_count($result['wall_id']);
+
 $mysqli->close();
 
 
