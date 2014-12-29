@@ -11,6 +11,13 @@ if(empty($_POST['user_id'])  ) {
 	exit (json_encode($ret));
 }
 
+$ver = $start_verson;
+if(isset($_POST['ver']) && $_POST['ver'] != '') {
+	$ver = $_POST['ver'];
+}
+
+$start_change_verson = '1.7';
+
 $user_id = $_POST['user_id'] + 0;
 
 $start = PHP_INT_MAX;
@@ -32,11 +39,19 @@ $count = 20;
 if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 	$count = $_POST['count'] + 0 ;
 }
-
-if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ?  ORDER BY notif_id DESC limit ? "))) {
+if( $ver < $start_change_verson ) {
+	if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ? and type not in('post','wallnew','favwallnew')  ORDER BY notif_id DESC limit ? "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
+	}
+}
+else {
+	if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ?  ORDER BY notif_id DESC limit ? "))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+			
+	}
 }
 
 if (!$stmt->bind_param("iii", $user_id, $start, $count)) {
@@ -61,7 +76,7 @@ $results = array();
 while($stmt->fetch()) {
 	$ele = array();
 	foreach($result as $key=>$val) {
-		if($key == 'active_userid') {
+		if($key == 'active_userid' && $val != 0) {
 				//get active user
 				//$mysqli->next_result();
 				$ui = $user_id;
@@ -100,7 +115,7 @@ while($stmt->fetch()) {
 				}
 			}
 		}
-		elseif($key == 'wall_id' && $val != 0) {
+		elseif($key == 'wall_id' && $val != 0  ) {
 			if($get_wall = $mysqli->query("select * from msgwall where wall_id = {$val} ")) {
 				if($get_wall->num_rows == 1) {
 					$wall = $get_wall->fetch_assoc();

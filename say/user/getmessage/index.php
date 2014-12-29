@@ -1,15 +1,10 @@
 <?php
 include ('../../header.php');
 
-
-
 if(!check_login()) {
 	$ret['ErrorMsg'] = '没有登录';
 	exit (json_encode($ret));
 }
-
-
-
 
 if(empty($_POST['userid'])) {
 	$ret['ErrorMsg'] = '参数错误';
@@ -17,7 +12,6 @@ if(empty($_POST['userid'])) {
 }
 
 $count = 20;
-
 
 if(isset($_POST['count'])) {
 
@@ -31,9 +25,7 @@ if(isset($_POST['start_id'])) {
 	$start = $_POST['start_id'] + 0 ;
 }
 
-
 $user_id = $_POST['userid'];
-
 
 if($start == 0) {
 
@@ -42,8 +34,6 @@ if($start == 0) {
 		exit (json_encode($ret));	
 			
 	}
-	
-	
 	
 	if (!$stmt->bind_param("ii", $user_id, $count)) {
 	  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
@@ -73,8 +63,6 @@ elseif($start > 0) {
 			
 	}
 	
-	
-	
 	if (!$stmt->bind_param("iii", $user_id, $start, $count)) {
 	  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
@@ -96,44 +84,21 @@ elseif($start > 0) {
 }
 
 $results = array();
-if (!($stmt1 = $mysqli->prepare("SELECT nickname,photo_url,photo_color,gender,birthday,description,expert_type FROM userinfo WHERE user_id = ?"))) {
-		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
-		exit (json_encode($ret));	
-		
-	}
+
 while($stmt->fetch()) {
+	$c = array();
 	foreach($result as $key => $val) { 
   	$c[$key] = $val; 
-		if($key == 'author_id') {
-				if (!$stmt1->bind_param("i", $val)) {
- 	 				$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
-					exit (json_encode($ret));
-				}
-				
-				if (!$stmt1->execute()) {
-  				$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-					exit (json_encode($ret));
-				}
-				$stmt1->bind_result($nickname,$photo_url,$photo_color,$gender,$birthday,$description,$expert_type);
-				while($stmt1->fetch()) {
-					$c['nickname'] = $nickname;
-					$c['photo_url'] = $photo_url;
-					$c['photo_color'] = $photo_color;
-					$c['gender'] = $gender;
-					$c['birthday'] = $birthday;
-					$c['description'] = $description;
-					$c['expert_type'] = $expert_type;
-				}
-				
-			}
   } 
+	$user = get_userinfo($c['author_id']);
+	$c = array_merge($c,$user);
 	$results[] = $c;
 }
-$stmt1->close();
+
 $stmt->close();
 $mysqli->close();
 
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['messages'] = $results;
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

@@ -198,12 +198,13 @@ update_user_point($user_id, 3);
 
 if($wall_id > 0) {
 	//notification
-	
+	$zero_id = 0;
 	if($owner_user != $user_id) {
 		$n_type = $noti_type['wall_new'];
-		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $owner_user AND active_userid = $user_id AND type = '$n_type' AND wall_id = $wall_id ")) {
+		
+		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $owner_user AND active_userid = $zero_id AND type = '$n_type' AND wall_id = $wall_id ")) {
 			if($rets->num_rows > 0) {
-				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $owner_user AND active_userid = $user_id AND type = '$n_type' AND wall_id = $wall_id ")) {
+				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $owner_user AND active_userid = $zero_id AND type = '$n_type' AND wall_id = $wall_id ")) {
 					printf("Error: %s\n", $mysqli->error);
 				}
 				
@@ -213,7 +214,7 @@ if($wall_id > 0) {
 			printf("Error: %s\n", $mysqli->error);
 		}
 		
-		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($owner_user, $user_id, $wall_id, '$n_type', $time)")) {
+		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($owner_user, $zero_id, $wall_id, '$n_type', $time)")) {
 			printf("Error: %s\n", $mysqli->error);
 		}
 		
@@ -233,9 +234,10 @@ if($wall_id > 0) {
 	foreach($fav_users as $fav_userid) {
 		if($fav_userid != $user_id) {
 			$n_type = $noti_type['fav_wall_new'];
-			if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $owner_user AND type = '$n_type' AND wall_id = $wall_id ")) {
+			
+			if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $zero_id AND type = '$n_type' AND wall_id = $wall_id ")) {
 			if($rets->num_rows > 0) {
-				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $owner_user AND type = '$n_type' AND wall_id = $wall_id ")) {
+				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $fav_userid AND active_userid = $zero_id AND type = '$n_type' AND wall_id = $wall_id ")) {
 					printf("Error: %s\n", $mysqli->error);
 				}
 				
@@ -245,7 +247,7 @@ if($wall_id > 0) {
 			printf("Error: %s\n", $mysqli->error);
 		}
 		
-		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($fav_userid, $owner_user, $wall_id, '$n_type', $time)")) {
+		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, wall_id, type, time) VALUES ($fav_userid, $zero_id, $wall_id, '$n_type', $time)")) {
 			printf("Error: %s\n", $mysqli->error);
 		}
 		}
@@ -266,9 +268,9 @@ else {
 foreach($follow_users as $follow_id) {
 	if($follow_id != $user_id) {
 		$n_type = $noti_type['post'];
-		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
+		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' ")) {
 		if($rets->num_rows > 0) {
-			if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' AND message_id = $message_id ")) {
+			if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $follow_id AND active_userid = $user_id AND type = '$n_type' ")) {
 				printf("Error: %s\n", $mysqli->error);
 			}
 			
@@ -278,7 +280,7 @@ foreach($follow_users as $follow_id) {
 		printf("Error: %s\n", $mysqli->error);
 	}
 	
-	if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, message_id, type, time) VALUES ($follow_id, $user_id, $message_id, '$n_type', $time)")) {
+	if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid,  type, time) VALUES ($follow_id, $user_id, '$n_type', $time)")) {
 		printf("Error: %s\n", $mysqli->error);
 	}
 	}

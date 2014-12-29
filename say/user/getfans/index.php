@@ -50,12 +50,13 @@ if (!$stmt->execute()) {
 	  $ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 }
-
+$stmt->store_result();
 $stmt->bind_result($follow_id, $user_id,$newtofollowuser);
 
 $es = array();
 
 while($stmt->fetch()) {
+	$a = array();
 	$a['user_id'] = $user_id;
 	$a['follow_id'] = $follow_id;
 	$a['newtofollowuser'] = $newtofollowuser;
@@ -82,7 +83,7 @@ foreach($es as $e) {
 	  $ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt1->error;
 		exit (json_encode($ret));
 	}
-	
+	$stmt->store_result();
 	$result = array();
 	$bindVarsArray = array();
 	$meta = $stmt->result_metadata();

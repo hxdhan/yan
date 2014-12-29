@@ -42,6 +42,112 @@ if (!$stmt->execute()) {
 
 $stmt->close();
 
+//if share to pengyouquan
+if (strcasecmp($platform, 'pengyouquan') == 0) {
+
+	$chance = 100;
+
+	//probality 100% get 
+	if(mt_rand(1,100) < $chance) {
+		//check message 
+		if($rets = $mysqli->query("select * from message where author_id = $user_id and message_id = $message_id and category_id in (102)")) {
+				//send gift message
+				if($rets->num_rows > 0) {
+						$tieer_id = 1;
+						$receive_userid = $user_id;
+						$longitude = 116.339889;
+						$latitude = 40.029367;
+						$content = "亲爱的贴客大人，贴儿小妞儿在此鞠躬感谢你参加贴儿的有奖活动哦！稍后会有获奖信息的通知~敬请期待！";
+						$duration = 0;
+						$content_type = 0;
+						$time = time();
+						if (!($stmt = $mysqli->prepare("INSERT INTO  usrchat (user_id,receive_userid, longitude,latitude,chat_content,duration, content_type, time) values (?,?,?,?,?,?,?,?) "))) {
+							$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+							exit (json_encode($ret));	
+							
+						}
+
+						if (!$stmt->bind_param("iiddsiii", $tieer_id, $receive_userid,$longitude, $latitude, $content,$duration,$content_type,$time)) {
+							$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+							exit (json_encode($ret));
+						}
+
+						if (!$stmt->execute()) {
+							$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+							exit (json_encode($ret));
+						}
+						$stmt->close();
+						
+						//notifications . only one chat data notifaction
+						$n_type = $noti_type['chat'];
+
+						if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $tieer_id AND type = '$n_type' ")) {
+							if($rets->num_rows > 0) {
+								if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $tieer_id AND type = '$n_type' ")) {
+									printf("Error: %s\n", $mysqli->error);
+								}
+								
+							}
+						}
+						else {
+							printf("Error: %s\n", $mysqli->error);
+						}
+							
+						if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, type, time) VALUES ($receive_userid, $tieer_id, '$n_type', $time)")) {
+							printf("Error: %s\n", $mysqli->error);
+						}
+
+						
+						if($get_registration = $mysqli->query("SELECT push_registration FROM user WHERE user_id = $receive_userid")) {
+							$receive_value = $get_registration->fetch_assoc()['push_registration'];
+						}
+						if(!empty($receive_value)) {
+							$data = '';
+							$send_no = get_push_id();
+
+							$data.= 'sendno='.$send_no;
+
+							$data.= '&app_key='.$app_key;
+							$data.= '&receiver_type='.$receive_type;
+							$data.= '&receiver_value='.$receive_value;
+
+							$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
+
+							$data.='&verification_code='.md5($verification_code);
+							$data.='&msg_type='.$msg_type;
+							
+							$charset = 'UTF-8';
+							$length = 40;
+							
+							if(mb_strlen($content, $charset) > $length) {
+								$content = mb_substr($content, 0, $length - 3, $charset) . '...';
+							}
+							$c['n_content'] = $content;
+								
+							$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'chat','user_param_1'=>$user_id);
+							$data.='&msg_content='.json_encode($c);
+							$data.='&platform='.$platform;
+							$data.='&apns_production='.$apns_production;
+							
+							$ch = curl_init();
+							curl_setopt($ch,CURLOPT_URL,$push_url);
+							curl_setopt($ch,CURLOPT_POST,1);
+
+							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+							curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+							curl_exec($ch);
+
+						}
+				}
+		}
+		else {
+			printf("Error: %s\n", $mysqli->error);
+		}
+
+
+	}
+
+}
 
 $mysqli->close();
 

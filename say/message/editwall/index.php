@@ -21,32 +21,7 @@ if(isset($_POST['name']) && $_POST['name'] != '') {
 	$sql_array[] = "name = ?";
 	$par_type .= 's';
 	$param[] = &$_POST['name'];
-	if (!($stmt = $mysqli->prepare("select count(*) from msgwall where name = ? "))) {
-		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
-		exit (json_encode($ret));	
-		
-	}
-
-	if (!$stmt->bind_param("s",  $_POST['name'])) {
-		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
-		exit (json_encode($ret));
-	}
-
-	if (!$stmt->execute()) {
-		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-		exit (json_encode($ret));
-	}
-
-	$stmt->bind_result($count);
-
-	$stmt->fetch();
-
-	$stmt->close();
-
-	if($count > 0) {
-		$ret['ErrorMsg'] =  "该名字已经使用了";
-		exit (json_encode($ret));
-	}
+	
 }
 
 if(isset($_POST['info']) && $_POST['info'] != '') {

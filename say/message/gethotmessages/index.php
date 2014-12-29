@@ -39,7 +39,7 @@ else {
 
 if($category_id == 0) {
 	if($gender == 'A') {
-		if (!($stmt = $mysqli->prepare("SELECT * FROM message ORDER BY (like_count*10 + comment_count*20 + receive_count) LIMIT ? "))) {
+		if (!($stmt = $mysqli->prepare("SELECT * FROM message ORDER BY (like_count*10 + comment_count*20 + receive_count) desc LIMIT ? "))) {
 			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 			exit (json_encode($ret));	
 			

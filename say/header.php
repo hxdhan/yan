@@ -1,7 +1,7 @@
 <?php
 header("Content-type: text/html; charset=utf-8");
-header("Cache-Control: no-cache"); 
-
+header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 $db_host = 'localhost';
 $db_name = 'say';
 $db_user = 'root';
@@ -48,7 +48,7 @@ $version = '1.7';
 
 $start_verson = '1.0';
 
-$noti_type = array('fol'=>'follow', 'com'=>'comment', 'rep'=>'reply', 'like'=>'like', 'chat'=>'chat', 'enc'=>'encounter', 'invi'=>'invite' );
+$noti_type = array('fol'=>'follow', 'com'=>'comment', 'rep'=>'reply', 'like'=>'like', 'chat'=>'chat', 'enc'=>'encounter', 'invi'=>'invite', 'wall_new' => 'wallnew', 'fav_wall_new' =>'favwallnew', 'post' => 'post' );
 
 //connect mysql db 
 $mysqli = new mysqli($db_host, $db_user, $db_pwd, $db_name);
@@ -159,7 +159,7 @@ function half_image($from_path, $to_path) {
 }
 
 function get_my_follow_count ($user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userfollow WHERE user_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -188,7 +188,7 @@ function get_my_follow_count ($user_id) {
 }
 
 function get_fan_count ($user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userfollow WHERE follow_userid = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -217,7 +217,7 @@ function get_fan_count ($user_id) {
 }
 
 function get_friend_count($user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM usrfriend WHERE user_id = ? OR friend_userid = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -245,7 +245,7 @@ function get_friend_count($user_id) {
 }
 
 function is_my_fun($myid, $userid) {
-	global $mysqli;
+	global $ret, $mysqli;
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userfollow USE INDEX(follow_userid) WHERE follow_userid = ? and user_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
@@ -273,7 +273,7 @@ function is_my_fun($myid, $userid) {
 }
 
 function is_my_follow_user($myid, $user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userfollow USE INDEX(user_id) WHERE user_id = ? and follow_userid = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -281,7 +281,7 @@ function is_my_follow_user($myid, $user_id) {
 			
 	}
 
-if (!$stmt->bind_param("ii", $myid,$userid)) {
+if (!$stmt->bind_param("ii", $myid,$user_id)) {
 	  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 	}
@@ -296,11 +296,12 @@ $stmt->bind_result($is_my_follow_user);
 $stmt->fetch();
 
 $stmt->close();
+return $is_my_follow_user;
 
 }
 
 function get_like_status($message_id, $user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	if (!($stmt = $mysqli->prepare(" SELECT count(*) FROM  `like`  WHERE message_id = ? and like_userid = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
@@ -330,9 +331,9 @@ function get_like_status($message_id, $user_id) {
 }
 
 function get_userinfo($user_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
-	if (!($stmt = $mysqli->prepare("SELECT nickname,photo_url,photo_color,gender,birthday,description,expert_type FROM userinfo WHERE user_id = ?"))) {
+	if (!($stmt = $mysqli->prepare("SELECT * FROM userinfo WHERE user_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 	
@@ -347,17 +348,21 @@ function get_userinfo($user_id) {
 		exit (json_encode($ret));
 	}
 	
-	$stmt->bind_result($nickname,$photo_url,$photo_color,$gender,$birthday,$description,$expert_type);
-	
+	$stmt->store_result();
+	$bindVarsArray = array();
+	$result = array();
+	$meta = $stmt->result_metadata();
+
+	while ($column = $meta->fetch_field()) {
+		 $bindVarsArray[] = &$result[$column->name];
+	} 
+       
+	call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
 	$ele = array();
-	while($stmt->fetch()) {
-		$ele['nickname'] = $nickname;
-		$ele['photo_url'] = $photo_url;
-		$ele['photo_color'] = $photo_color;
-		$ele['gender'] = $gender;
-		$ele['birthday'] = $birthday;
-		$ele['description'] = $description;
-		$ele['expert_type'] = $expert_type;
+	while ($stmt->fetch()) {
+		foreach($result as $key => $val) {
+			$ele[$key] = $val;
+		}
 	}
 	$stmt->close();
 	return $ele;
@@ -419,7 +424,7 @@ function my_truncate($str,$len) {
 }
 
 function get_wallmsg_count($wall_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM message WHERE wall_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -447,7 +452,7 @@ function get_wallmsg_count($wall_id) {
 }
 
 function get_wallfavourate_count($wall_id) {
-	global $mysqli;
+	global $ret, $mysqli;
 	
 	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM msgwallfavourates WHERE wall_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -498,7 +503,7 @@ function get_grade () {
 }
 
 function update_user_point ($user, $point) {
-	global $noti_type, $mem_host, $mem_port, $mysqli, $app_key, $receive_type, $mast_secret, $msg_type, $platform, $apns_production, $push_url;
+	global $ret, $noti_type, $mem_host, $mem_port, $mysqli, $app_key, $receive_type, $mast_secret, $msg_type, $platform, $apns_production, $push_url;
 	
 	$grade = get_grade();
 	if($get_userpoint = $mysqli->query("select grade, point from userinfo where user_id = " . $user)) {
@@ -524,7 +529,7 @@ function update_user_point ($user, $point) {
 		$receive_userid = $user;
 		$longitude = 116.339889;
 		$latitude = 40.029367;
-		$content = "恭喜您，您的等级提升到" . ($u_grade + 1) . "级了";
+		$content = "恭喜你，你的等级提升到" . ($u_grade + 1) . "级了";
 		$duration = 0;
 		$content_type = 0;
 		$time = time();

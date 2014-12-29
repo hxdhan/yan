@@ -63,7 +63,7 @@ while ($column = $meta->fetch_field()) {
 call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
 
 $all_users = array();
-while(stmt->fetch()) {
+while($stmt->fetch()) {
 	$ele = array();
 	foreach($result as $key => $val) {
 		$ele[$key] = $val;
@@ -87,19 +87,20 @@ foreach ($all_users as $all_user) {
 		$u['newtouser'] = $all_user['newtouser'];	
 		  	
 		if (!$stmt->bind_param("i", $all_user['follow_userid'])) {
-			$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt1->error;
+			$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 			exit (json_encode($ret));
 		}
 	
 		if (!$stmt->execute()) {
-			$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt1->error;
+			$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 			exit (json_encode($ret));
 		}
 		
 		$stmt->store_result();
 		
 		$meta = $stmt->result_metadata();
-
+		$bindVarsArray = array();
+		$result = array();
 		while ($column = $meta->fetch_field()) {
 			 $bindVarsArray[] = &$result[$column->name];
 		}        
@@ -123,7 +124,6 @@ foreach ($all_users as $all_user) {
 	
 }
 
-$stmt1->close();
 $stmt->close();
 
 $mysqli->close();

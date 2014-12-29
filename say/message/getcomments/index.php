@@ -117,7 +117,7 @@ while($stmt->fetch()) {
 				exit (json_encode($ret));
 			}
 			
-			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description);
+			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description,$expert_type);
 			while($stmt1->fetch()) {
 				
 				$c['touser_nickname'] = $nickname;
@@ -139,4 +139,4 @@ $mysqli->close();
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['comments'] = $results;
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

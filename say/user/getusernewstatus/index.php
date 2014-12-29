@@ -132,13 +132,28 @@ $stmt->fetch();
 
 $stmt->close();
 
-$new_notif = 0;
+$ver = $start_verson;
+if(isset($_POST['ver']) && $_POST['ver'] != '') {
+	$ver = $_POST['ver'];
+}
 
-if (!($stmt = $mysqli->prepare("SELECT count(*) FROM usrnotification WHERE user_id = ? and new = 1 "))) {
+$start_change_verson = '1.7';
+
+$new_notif = 0;
+if( $ver < $start_change_verson ) {
+	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM usrnotification WHERE user_id = ? and new = 1 and type not in('post','wallnew','favwallnew')"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 			
 	}
+}
+else {
+	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM usrnotification WHERE user_id = ? and new = 1 "))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+			
+	}
+}
 
 if (!$stmt->bind_param("i", $user_id)) {
 	  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;

@@ -23,32 +23,6 @@ $name = $_POST['name'];
 $longitude = $_POST['longitude'];
 $latitude = $_POST['latitude'];
 
-if (!($stmt = $mysqli->prepare("select count(*) from msgwall where name = ? "))) {
-	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
-	exit (json_encode($ret));	
-		
-}
-
-if (!$stmt->bind_param("s",  $name)) {
-  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
-	exit (json_encode($ret));
-}
-
-if (!$stmt->execute()) {
-  $ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-	exit (json_encode($ret));
-}
-
-$stmt->bind_result($count);
-
-$stmt->fetch();
-
-$stmt->close();
-
-if($count > 0) {
-	$ret['ErrorMsg'] =  "该名字已经使用了";
-	exit (json_encode($ret));
-}
 
 $info = '';
 if(isset($_POST['info']) && $_POST['info'] != '') {
@@ -64,6 +38,12 @@ if(isset($_POST['radius']) && doubleval($_POST['radius']) > 0) {
 $web_url = '';
 if(isset($_POST['web_url']) && $_POST['web_url'] != '') {
 	$web_url = $_POST['web_url'];
+	
+}
+
+$address = '';
+if(isset($_POST['address']) && $_POST['address'] != '') {
+	$address = $_POST['address'];
 	
 }
 
@@ -107,13 +87,13 @@ if(isset($_POST['status']) && intval($_POST['status']) > 0) {
 }
 
 
-if (!($stmt = $mysqli->prepare("insert into msgwall(owner_userid,name,info,image_url,time,web_url,longitude,latitude,radius,`type`,status) values(?,?,?,?,?,?,?,?,?,?,?) "))) {
+if (!($stmt = $mysqli->prepare("insert into msgwall(owner_userid,name,info,image_url,time,web_url,longitude,latitude,radius,address,`type`,status) values(?,?,?,?,?,?,?,?,?,?,?,?) "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
 }
 
-if (!$stmt->bind_param("isssisdddii",  $user_id, $name,$info,$image_url,$time,$web_url,$longitude,$latitude,$radius,$type,$status)) {
+if (!$stmt->bind_param("isssisdddsii",  $user_id, $name,$info,$image_url,$time,$web_url,$longitude,$latitude,$radius,$address,$type,$status)) {
   $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 	exit (json_encode($ret));
 }
@@ -169,4 +149,4 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['wall'] = $result;
 
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

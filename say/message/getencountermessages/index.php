@@ -116,12 +116,11 @@ if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 
 
 
-	$stmt->close();
+$stmt->close();
 
-	$mysqli->close();
+$mysqli->close();
 
-	$ret['status'] = 1;
-	$ret['ErrorMsg'] = '';
-	$ret['messages'] = $message;
-
-	exit (json_encode($ret));
+$ret['status'] = 1;
+$ret['ErrorMsg'] = '';
+$ret['messages'] = $message;
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

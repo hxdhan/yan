@@ -16,8 +16,16 @@ if(empty($_POST['longitude']) || empty($_POST['latitude'])  ) {
 $longitude = $_POST['longitude'] + 0 ;
 $latitude = $_POST['latitude'] + 0 ;
 
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
+}
 
-$distance = 10.0;
+
+$distance = 5.0;
 
 
 $R = 6371;
@@ -52,13 +60,13 @@ FROM
 		AND longitude BETWEEN ? And ?	 
 	) As m  
 	WHERE acos(sin(?)*sin(radians(m.latitude)) + cos(?)*cos(radians(m.latitude))*cos(radians(m.longitude)-?)) * ? < ?
-	ORDER BY distance ASC limit ? "))) {
+	ORDER BY distance ASC"))) {
 $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 exit (json_encode($ret));	
 
 }
 				
-if (!$stmt->bind_param("dddidddddddidi",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance, $count)) {
+if (!$stmt->bind_param("dddidddddddid",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance)) {
 	$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 	exit (json_encode($ret));
 }
@@ -133,7 +141,11 @@ foreach($all_users as $u) {
 			foreach($result as $key => $val) {
 				$ele[$key] = $val;
 			}
-			
+			$ele['follow_user_count'] = get_my_follow_count($ele['user_id']);
+			$ele['fan_count'] = get_fan_count($ele['user_id']);
+			$ele['friend_count'] = get_friend_count($ele['user_id']);
+			$ele['is_my_follow_user'] = is_my_follow_user($myid, $ele['user_id']);
+			$ele['is_my_fan_user'] = is_my_fun($myid, $ele['user_id']);
 			$c = array_merge($c,$ele);
 		}
 		

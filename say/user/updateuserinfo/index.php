@@ -139,5 +139,4 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['user'] = $usr;
 
-exit (json_encode($ret));
-?>
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

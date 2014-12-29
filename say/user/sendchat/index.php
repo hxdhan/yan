@@ -178,7 +178,7 @@ if(!empty($receive_value)) {
 	if(intval($chat['content_type']) === 0) {
 		
 		$charset = 'UTF-8';
-		$length = 60;
+		$length = 40;
 		$ct = $chat['chat_content'];
 		if(mb_strlen($ct, $charset) > $length) {
 			$ct = mb_substr($ct, 0, $length - 3, $charset) . '...';
@@ -216,4 +216,4 @@ $mysqli->close();
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['chat'] = $chat;
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

@@ -325,4 +325,4 @@ $ret['ErrorMsg'] = '';
 $ret['comment'] = $result;
 
 
-exit (json_encode($ret));
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

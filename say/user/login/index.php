@@ -179,6 +179,4 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 $ret['login_token'] = $login_token;
 $ret['user'] = $result;
-exit (json_encode($ret));
- 
-?>
+exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

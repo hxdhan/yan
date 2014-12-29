@@ -41,22 +41,37 @@ $maxLon = $longitude + rad2deg($distance/$R/cos(deg2rad($latitude)));
 $minLon = $longitude - rad2deg($distance/$R/cos(deg2rad($latitude)));
 //var_dump($minLon);
 
+// if (!($stmt = $mysqli->prepare("SELECT w.*,acos(sin(?)*sin(radians(w.latitude)) + cos(?)*cos(radians(w.latitude))*cos(radians(w.longitude)-?)) * ? AS distance
+// FROM
+	// (
+	// SELECT *
+	// FROM msgwall
+	// WHERE latitude BETWEEN ? AND ?
+		// AND longitude BETWEEN ? And ?	 
+	// ) As w 
+	// WHERE acos(sin(?)*sin(radians(w.latitude)) + cos(?)*cos(radians(w.latitude))*cos(radians(w.longitude)-?)) * ? < ?
+	// ORDER BY distance ASC limit ? "))) {
+// $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+// exit (json_encode($ret));	
+
+// }
+
 if (!($stmt = $mysqli->prepare("SELECT w.*,acos(sin(?)*sin(radians(w.latitude)) + cos(?)*cos(radians(w.latitude))*cos(radians(w.longitude)-?)) * ? AS distance
 FROM
-	(
-	SELECT *
-	FROM msgwall
-	WHERE latitude BETWEEN ? AND ?
-		AND longitude BETWEEN ? And ?	 
-	) As w 
-	WHERE acos(sin(?)*sin(radians(w.latitude)) + cos(?)*cos(radians(w.latitude))*cos(radians(w.longitude)-?)) * ? < ?
+	msgwall w
+	
 	ORDER BY distance ASC limit ? "))) {
 $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 exit (json_encode($ret));	
 
 }
 				
-if (!$stmt->bind_param("dddidddddddidi",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance, $count)) {
+// if (!$stmt->bind_param("dddidddddddidi",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R,$minLat, $maxLat, $minLon, $maxLon,deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $distance, $count)) {
+	// $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+	// exit (json_encode($ret));
+// }
+
+if (!$stmt->bind_param("dddii",deg2rad($latitude), deg2rad($latitude), deg2rad($longitude), $R, $count)) {
 	$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 	exit (json_encode($ret));
 }
