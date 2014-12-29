@@ -378,28 +378,21 @@ function time_elapsed_string($ptime) {
         return '0秒';
     }
 
-    $a = array( 365 * 24 * 60 * 60  =>  'year',
-                 30 * 24 * 60 * 60  =>  'month',
-                      24 * 60 * 60  =>  'day',
-                           60 * 60  =>  'hour',
-                                60  =>  'minute',
-                                 1  =>  'second'
+    $a = array( 365 * 24 * 60 * 60  =>  '年',
+                 30 * 24 * 60 * 60  =>  '个月',
+                      24 * 60 * 60  =>  '天',
+                           60 * 60  =>  '小时',
+                                60  =>  '分钟',
+                                 1  =>  '秒'
                 );
-    $a_plural = array( 'year'   => '年',
-                       'month'  => '个月',
-                       'day'    => '天',
-                       'hour'   => '小时',
-                       'minute' => '分钟',
-                       'second' => '秒'
-                );
-
+   
     foreach ($a as $secs => $str)
     {
         $d = $etime / $secs;
         if ($d >= 1)
         {
             $r = round($d);
-            return $r . ($r >= 1 ? $a_plural[$str] : $str) . '前';
+            return $r . $str . '前';
         }
     }
 }
@@ -628,5 +621,9 @@ function update_user_point ($user, $point) {
 	//$memcache = memcache_connect($mem_host, $mem_port);
 	
 	
+}
+
+function push_message($from_id = 0, $to_id, $mesage, $type = 0, $user_param) {
+
 }
  
