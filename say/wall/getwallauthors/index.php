@@ -6,29 +6,33 @@ if(!check_login()) {
 	exit (json_encode($ret));
 }
 
-$user_id = $user['user_id'];
-
-$myid = 0;
-
-if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
-
-	$myid = $_POST['myid'] + 0 ;
-}
-else {
-	$myid = $user['user_id'];
+if(empty($_POST['wall_id'])  ) {
+	$ret['ErrorMsg'] = '参数错误';
+	exit (json_encode($ret));
 }
 
+$wall_id = $_POST['wall_id'] + 0;
 
-$new_comment = 1;
-$new_like = 1;
+$start_id = 0;
 
-if (!($stmt = $mysqli->prepare("SELECT * FROM message WHERE author_id = ? AND (new_comment = ? OR new_like = ?)  ORDER BY new_time DESC "))) {
+if(isset($_POST['start_id']) && intval($_POST['start_id']) > 0) {
+	$start_id = $_POST['start_id'];
+}
+
+$count = 10;
+
+if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
+
+	$count = $_POST['count'] + 0 ;
+}
+
+if (!($stmt = $mysqli->prepare("select u.* from userinfo u, (SELECT distinct(author_id) FROM `message` where wall_id = ?) a where u.user_id = a.author_Id limit ?, offset ? "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
 }
 
-if (!$stmt->bind_param("iii", $user_id, $new_comment, $new_like)) {
+if (!$stmt->bind_param("iii",  $wall_id, $count, $start_id)) {
   $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 	exit (json_encode($ret));
 }
@@ -47,26 +51,21 @@ while ($column = $meta->fetch_field()) {
 }        
 call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
 
-$results = array();
-
-while ($stmt->fetch()) {
-	$c = array();
-	foreach($result as $key => $val) {
-		$c[$key] = $val;
+$users = array();
+while($stmt->fetch()) {
+	$ele = array();
+	foreach($result as $key => $val) { 
+		$ele[$key] = $val; 
 	}
-	$c['like_status'] = get_like_status($c['message_id'],$myid);
 	
-	$user = get_userinfo($c['author_id']);
+	$users[] = $ele;
 	
-	$c = array_merge($c,$user);
-	update_receive_count($c['message_id']);
-	$results[] = $c;
 }
 
-$stmt->close();
-	
 $mysqli->close();
+
 $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
-$ret['messages'] = $results;
+$ret['authors'] = $users;
+
 exit (json_encode($ret,JSON_UNESCAPED_UNICODE));

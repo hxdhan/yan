@@ -148,7 +148,7 @@ $result['has_cellphone'] = $has_cellphone;
 $result['has_wxtoken'] = $has_wxtoken;
 
 $memcache = memcache_connect($mem_host, $mem_port);
-memcache_set($memcache, $login_token, json_encode($result), 0, 60*60*24);
+memcache_set($memcache, $login_token, json_encode($result), 0, 60*2);
 
 $stmt->close();
 

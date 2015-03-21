@@ -43,7 +43,7 @@ $stmt->close();
 
 if($count == 0) {
 	
-	$ret['ErrorMsg'] = "没有找到遇言号为{$follow}的用户";
+	$ret['ErrorMsg'] = "没有找到贴号为{$follow}的用户";
 	
 	exit (json_encode($ret));
 }
@@ -216,17 +216,19 @@ if($get_followuser = $mysqli->query("SELECT push_registration FROM user where us
 		$data.='&msg_content='.json_encode($ca);
 		$data.='&platform='.$platform;
 		$data.='&apns_production='.$apns_production;
+		
+		curl_post($data, $push_url);
 	
-		$ch = curl_init();
+		//$ch = curl_init();
 	
-		curl_setopt($ch,CURLOPT_URL,$push_url);
-		curl_setopt($ch,CURLOPT_POST,1);
+		//curl_setopt($ch,CURLOPT_URL,$push_url);
+		//curl_setopt($ch,CURLOPT_POST,1);
 	
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//$response = curl_exec($ch);
 		//echo $response;
-		curl_exec($ch);
+		//curl_exec($ch);
   }
 }
 

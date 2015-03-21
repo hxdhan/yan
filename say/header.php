@@ -10,6 +10,8 @@ $salt = 'say123';
 $mem_host = 'localhost';
 $mem_port = 11211;
 
+$admin_key = 'tieer';
+
 $max_follow_count = 100;
 
 $ret = array();
@@ -121,6 +123,7 @@ function get_push_id() {
 	}
 }
 
+/**
 function curl_post($curlPost,$url){
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
@@ -133,6 +136,25 @@ function curl_post($curlPost,$url){
 		curl_close($curl);
 		return $return_str;
 }
+**/
+function curl_post($curlPost,$url){
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_NOBODY, true);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $curlPost);
+		$mh = curl_multi_init();
+		curl_multi_add_handle($mh,$curl);
+		$running = 'idc';
+		//get response???
+		curl_multi_exec($mh,$running);
+		
+		//close??
+}
+
+			
 
 function check_path () {
 	$date_name = date('Ymd');
@@ -407,7 +429,7 @@ function my_truncate($str,$len) {
 		}
 	}
 	else {
-		if(mb_strlen($st,'utf-8') < $len) {
+		if(mb_strlen($str,'utf-8') < $len) {
 			return mb_substr($str,0,$len,'utf-8').'...';
 		}
 		else {
@@ -416,6 +438,7 @@ function my_truncate($str,$len) {
 	}
 }
 
+/**
 function get_wallmsg_count($wall_id) {
 	global $ret, $mysqli;
 	
@@ -443,11 +466,11 @@ function get_wallmsg_count($wall_id) {
 	
 	return $count;
 }
-
+**/
 function get_wallfavourate_count($wall_id) {
 	global $ret, $mysqli;
 	
-	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM msgwallfavourates WHERE wall_id = ? "))) {
+	if (!($stmt = $mysqli->prepare("SELECT count(*) FROM msgwallfavourates USE INDEX(wall_id) WHERE wall_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 			
@@ -508,8 +531,14 @@ function update_user_point ($user, $point) {
 		printf("%s",$mysqli->error);
 	}
 	
+	if($u_grade > 15) {
+		$grade[$u_grade] = $grade[15];
+	}
+	$upgrade = 0;
 	if($u_point + $point >= $grade[$u_grade]) {
 		//upgrade
+		
+		$upgrade = 1;
 	
 		if($mysqli->query("update userinfo set grade = grade + 1 , point = ". ($u_point + $point - $grade[$u_grade]) . " where user_id = {$user}")) {
 		
@@ -518,11 +547,15 @@ function update_user_point ($user, $point) {
 				printf("%s",$mysqli->error);
 		}
 		//send chat
+		/**
 		$user_id = 1;
 		$receive_userid = $user;
 		$longitude = 116.339889;
 		$latitude = 40.029367;
+		**/
 		$content = "恭喜你，你的等级提升到" . ($u_grade + 1) . "级了";
+		tieer_to_user($user, $content);
+		/**
 		$duration = 0;
 		$content_type = 0;
 		$time = time();
@@ -542,9 +575,11 @@ function update_user_point ($user, $point) {
 			exit (json_encode($ret));
 		}
 		$stmt->close();
+		**/
 		//notifaction
+		/**
 		$n_type = $noti_type['chat'];
-
+    
 		if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $user_id AND type = '$n_type' ")) {
 			if($rets->num_rows > 0) {
 				if(!$mysqli->query("DELETE FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $user_id AND type = '$n_type' ")) {
@@ -560,7 +595,7 @@ function update_user_point ($user, $point) {
 		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, type, time) VALUES ($receive_userid, $user_id, '$n_type', $time)")) {
 			printf("Error: %s\n", $mysqli->error);
 		}
-		
+		**/
 		//send push 
 		if($get_nickname = $mysqli->query("SELECT nickname FROM userinfo WHERE user_id = $user_id")) {
 			$nickname = $get_nickname->fetch_assoc()['nickname'];
@@ -601,11 +636,15 @@ function update_user_point ($user, $point) {
 
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$mh = curl_multi_init();
+			curl_multi_add_handle($mh,$curl);
+			$running = 'idc';
+			curl_multi_exec($mh,$running);
 			//$response = curl_exec($ch);
 			//echo $response;
-			curl_exec($ch);
+			//curl_exec($ch);
 
-}
+		}
 		
 	}
 	else {
@@ -618,9 +657,129 @@ function update_user_point ($user, $point) {
 		}
 	}
 	
+	return $upgrade;
+	
 	//$memcache = memcache_connect($mem_host, $mem_port);
 	
 	
+}
+
+function update_receive_count($message_id) {
+	global $ret, $mysqli;
+	
+	if (!($stmt = $mysqli->prepare("UPDATE message set receive_count = receive_count + 1 WHERE message_id = ? "))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+			
+	}
+
+	if (!$stmt->bind_param("i", $message_id)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	
+	$stmt->close();
+}
+
+function is_my_favourage_wall($user_id, $wall_id) {
+	global $ret, $mysqli;
+	
+	if (!($stmt = $mysqli->prepare("select count(*) from msgwallfavourates USE INDEX(user_id) where user_id =? and wall_id = ? "))) {
+	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+	exit (json_encode($ret));	
+		
+	}
+
+	if (!$stmt->bind_param("ii",  $user_id, $wall_id)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	$stmt->bind_result($count);
+
+	while($stmt->fetch()) {
+
+	}
+	
+	return $count;
+
+}
+
+function tieer_to_user ($user_id, $content) {
+	global $ret, $mysqli;
+	$tieer_id = 1;
+	$receive_userid = $user_id;
+	$longitude = 116.339889;
+	$latitude = 40.029367;
+	//$content = "亲爱的贴友，贴儿小妞儿在此鞠躬感谢你参加贴儿的有奖活动哦！稍后会有获奖信息的通知~敬请期待！";
+	$duration = 0;
+	$content_type = 0;
+	$time = time();
+	if (!($stmt = $mysqli->prepare("INSERT INTO  usrchat (user_id,receive_userid, longitude,latitude,chat_content,duration, content_type, time) values (?,?,?,?,?,?,?,?) "))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+		
+	}
+
+	if (!$stmt->bind_param("iiddsiii", $tieer_id, $receive_userid,$longitude, $latitude, $content,$duration,$content_type,$time)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	$stmt->close();
+}
+
+function send_hongbao ($user_id) {
+	global $ret, $mysqli;
+	$curr_time = time();
+	$hongbao = 0;
+	$two_days_ago = $curr_time - 60 * 60 * 24 * 2;
+	$query = "update eventredenvelope set AliLuckyMoneyCode = @hongbao := AliLuckyMoneyCode , PostStatus = 1, PostUserId = {$user_id}, PostTime = {$curr_time} where PostStatus = 0 and CreateTime > {$two_days_ago} limit 1 ; select @hongbao;";
+	if($mysqli->multi_query($query)) {
+		do {
+			if ($result = $mysqli->store_result()) {
+				while ($row = $result->fetch_row()) {
+					$hongbao = $row[0];
+				}
+				$result->free();
+			}
+			//if ($mysqli->more_results()) {
+				//printf("-----------------\n");
+			//}
+		} while ($mysqli->next_result());
+	}
+	else {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $mysqli->error . ") ";
+		exit (json_encode($ret));
+	}
+	return $hongbao;
+}
+
+function request($url, $payload) {
+
+  $cmd = "curl -X POST -H 'Content-Type: application/json'";
+  $cmd.= " -d '" . $payload . "' " . "'" . $url . "'";
+
+  if (!$this->debug()) {
+    $cmd .= " > /dev/null 2>&1 &";
+  }
+
+  exec($cmd, $output, $exit);
+  return $exit == 0;
 }
 
 function push_message($from_id = 0, $to_id, $mesage, $type = 0, $user_param) {

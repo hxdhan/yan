@@ -40,17 +40,25 @@ if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 	$count = $_POST['count'] + 0 ;
 }
 if( $ver < $start_change_verson ) {
-	if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ? and type not in('post','wallnew','favwallnew')  ORDER BY notif_id DESC limit ? "))) {
+	if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ? and type not in('post', 'wallnew', 'favwallnew')  ORDER BY notif_id DESC limit ? "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
 	}
 }
 else {
-	if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ?  ORDER BY notif_id DESC limit ? "))) {
-		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
-		exit (json_encode($ret));	
-			
+	if( $ver < '1.8' ) {
+		if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ?  ORDER BY notif_id DESC limit ? "))) {
+			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+			exit (json_encode($ret));	
+				
+		}
+	}
+	else {
+		if (!($stmt = $mysqli->prepare("SELECT * FROM usrnotification WHERE user_id = ? AND notif_id < ? and type not in('post', 'chat', 'wallnew', 'favwallnew')  ORDER BY notif_id DESC limit ? "))) {
+			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+			exit (json_encode($ret));	
+		}
 	}
 }
 
@@ -111,6 +119,7 @@ while($stmt->fetch()) {
 					$message['time'] = $message['time'] + 0;
 					$message['new_time'] = $message['new_time'] + 0;
 					$message['like_status'] = get_like_status($message['message_id'],$myid);
+					update_receive_count($message['message_id']);
 					$ele['message'] = $message;
 				}
 			}
@@ -120,7 +129,7 @@ while($stmt->fetch()) {
 				if($get_wall->num_rows == 1) {
 					$wall = $get_wall->fetch_assoc();
 					$wall['favourate_count'] = get_wallfavourate_count($wall['wall_id']);
-					$wall['message_count'] = get_wallmsg_count($wall['wall_id']);
+					
 					$ele['wall'] = $wall;
 				}
 			}

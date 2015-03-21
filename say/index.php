@@ -1,5 +1,9 @@
 <?php
-
+usleep(5000000);
+echo "tieer";
+//error_log(json_encode($_POST));
+//echo base64_encode(md5('tieer'));
+//echo md5('tieer');
 //phpinfo();
 
 //echo 1;

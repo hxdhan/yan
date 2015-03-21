@@ -44,7 +44,7 @@ $pw = '123456';
 
 
 
-$post_data = "ua=xueyan&pw=$pw&mb=".$mobile."&ms="."验证码：{$mobile_code}，请不要告诉别人哦。【遇言】";
+$post_data = "ua=xueyan&pw=$pw&mb=".$mobile."&ms="."验证码：{$mobile_code}，请不要告诉别人哦。【贴儿】";
 
 
 $gets =  Post($post_data, $target);

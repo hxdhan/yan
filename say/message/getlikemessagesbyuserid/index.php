@@ -90,6 +90,7 @@ while($stmt->fetch()) {
 		$c['like_id'] = $result['like_id'];
 		$c['message_id'] = $result['lmd'];
 	}
+	update_receive_count($c['message_id']);
 	$results[] = $c;
   unset($c);
 }

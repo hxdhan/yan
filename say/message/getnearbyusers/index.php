@@ -25,7 +25,7 @@ else {
 }
 
 
-$distance = 5.0;
+$distance = 1.0;
 
 
 $R = 6371;
@@ -60,7 +60,7 @@ FROM
 		AND longitude BETWEEN ? And ?	 
 	) As m  
 	WHERE acos(sin(?)*sin(radians(m.latitude)) + cos(?)*cos(radians(m.latitude))*cos(radians(m.longitude)-?)) * ? < ?
-	ORDER BY distance ASC"))) {
+	ORDER BY m.time desc"))) {
 $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 exit (json_encode($ret));	
 

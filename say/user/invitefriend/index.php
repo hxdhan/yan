@@ -100,16 +100,18 @@ $data.='&msg_content='.json_encode($c);
 $data.='&platform='.$platform;
 $data.='&apns_production='.$apns_production;
 
-$ch = curl_init();
+curl_post($data, $push_url);
 
-curl_setopt($ch,CURLOPT_URL,$push_url);
-curl_setopt($ch,CURLOPT_POST,1);
+//$ch = curl_init();
 
-curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//curl_setopt($ch,CURLOPT_URL,$push_url);
+//curl_setopt($ch,CURLOPT_POST,1);
+
+//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 //$response = curl_exec($ch);
 //echo $response;
-curl_exec($ch);
+//curl_exec($ch);
 
 $mysqli->close();
 

@@ -10,7 +10,7 @@ if(isset($_POST['user_id']) && $_POST['user_id'] != '' ) {
 	$user_id = $_POST['user_id'] + 0;
 }
 
-if (!($stmt = $mysqli->prepare("SELECT * FROM userinfo WHERE user_id = ? "))) {
+if (!($stmt = $mysqli->prepare("SELECT u.cellphone, ui.* FROM user u, userinfo ui WHERE u.user_id = ui.user_id and  u.user_id = ? "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 			

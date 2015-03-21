@@ -67,13 +67,13 @@ $stmt->fetch();
 
 $stmt->close();
 
-if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userencounter WHERE user_id = ?  "))) {
+if (!($stmt = $mysqli->prepare("SELECT count(*) FROM userencounter WHERE user_id = ? or encounter_userid = ? and status = 1"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 			
 	}
 
-if (!$stmt->bind_param("i", $userid)) {
+if (!$stmt->bind_param("ii", $userid, $userid)) {
 	  $ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 	}

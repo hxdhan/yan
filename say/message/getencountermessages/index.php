@@ -102,6 +102,7 @@ if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 						$row['time'] = $row['time'] +0;
 						$row['new_time'] = $row['new_time'] +0;
 						$row['encounter_time'] = $time_array[$i] + 0 ;
+						
 						$message[] = $row;
 					}
 					else {
@@ -109,6 +110,8 @@ if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 					}
 					
 			}
+			
+			update_receive_count($message_array[$i]);
 			
 	}
 

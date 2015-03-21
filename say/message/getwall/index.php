@@ -14,6 +14,15 @@ if(empty($_POST['wall_id'])) {
 }
 $wall_id = $_POST['wall_id'] + 0 ;
 
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
+}
+
 
 if (!($stmt = $mysqli->prepare("select * from msgwall where wall_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -31,7 +40,7 @@ if (!$stmt->execute()) {
 	exit (json_encode($ret));
 }
 
-//$stmt->store_result();
+$stmt->store_result();
 
 $meta = $stmt->result_metadata();
 
@@ -44,8 +53,14 @@ $stmt->fetch();
 
 $stmt->close();
 
+if(empty($result['wall_id'])) {
+   $ret['ErrorMsg'] = '墙已经被拆了';
+	 exit (json_encode($ret));
+}
+
 $result['favourate_count'] = get_wallfavourate_count($result['wall_id']);
-$result['message_count'] = get_wallmsg_count($result['wall_id']);
+
+$result['my_favourate'] = is_my_favourage_wall($myid, $result['wall_id']);
 
 $mysqli->close();
 

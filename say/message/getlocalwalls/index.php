@@ -11,6 +11,15 @@ if(empty($_POST['longitude']) || empty($_POST['latitude']) ) {
 	exit (json_encode($ret));
 }
 
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
+}
+
 $longitude = $_POST['longitude'];
 $latitude = $_POST['latitude'];
 
@@ -31,7 +40,7 @@ $R = 6371;
 					// ) As w 
 					// WHERE acos(sin(?)*sin(radians(latitude)) + cos(?)*cos(radians(latitude))*cos(radians(longitude)-?)) * ? < radius
 					// ORDER BY distance ASC "))) {
-if (!($stmt = $mysqli->prepare("SELECT *, acos(sin(?)*sin(radians(latitude)) + cos(?)*cos(radians(latitude))*cos(radians(longitude)-?)) * ? AS distance FROM msgwall WHERE acos(sin(?)*sin(radians(latitude)) + cos(?)*cos(radians(latitude))*cos(radians(longitude)-?)) * ? < radius ORDER BY distance ASC "))) {
+if (!($stmt = $mysqli->prepare("SELECT *, acos(sin(?)*sin(radians(latitude)) + cos(?)*cos(radians(latitude))*cos(radians(longitude)-?)) * ? AS distance  FROM msgwall WHERE acos(sin(?)*sin(radians(latitude)) + cos(?)*cos(radians(latitude))*cos(radians(longitude)-?)) * ? < radius ORDER BY message_count/(distance + 0.001) + recommand_level desc "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
@@ -63,7 +72,8 @@ while($stmt->fetch()) {
 		$e[$key] = $val;
 	}
 	$e['favourate_count'] = get_wallfavourate_count($e['wall_id']);
-	$e['message_count'] = get_wallmsg_count($e['wall_id']);
+	
+	$e['my_favourate'] = is_my_favourage_wall($myid, $e['wall_id']);
 	$walls[] = $e;
 	unset($e);
 

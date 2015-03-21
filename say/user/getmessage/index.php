@@ -27,6 +27,15 @@ if(isset($_POST['start_id'])) {
 
 $user_id = $_POST['userid'];
 
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
+}
+
 if($start == 0) {
 
 	if (!($stmt = $mysqli->prepare("SELECT * FROM message WHERE author_id = ? ORDER BY message_id DESC limit ?"))) {
@@ -92,6 +101,8 @@ while($stmt->fetch()) {
   } 
 	$user = get_userinfo($c['author_id']);
 	$c = array_merge($c,$user);
+	update_receive_count($c['message_id']);
+	$c['like_status'] = get_like_status($c['message_id'],$myid);
 	$results[] = $c;
 }
 

@@ -6,8 +6,6 @@ if(!check_login()) {
 	exit (json_encode($ret));
 }
 
-
-
 if(empty($_POST['user_id'])) {
 	$ret['ErrorMsg'] = '参数错误';
 	exit (json_encode($ret));
@@ -24,6 +22,15 @@ $count = 20;
 
 if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 	$count = $_POST['count'] + 0 ;
+}
+
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
 }
 
 
@@ -44,7 +51,8 @@ if (!$stmt->execute()) {
 }
 
 $stmt->store_result();
-
+$bindVarsArray = array();
+$result = array();
 $meta = $stmt->result_metadata();
 
 while ($column = $meta->fetch_field()) {
@@ -59,7 +67,8 @@ while($stmt->fetch()) {
 		$ele[$key] = $val;
 	}
 	$ele['favourate_count'] = get_wallfavourate_count($ele['wall_id']);
-	$ele['message_count'] = get_wallmsg_count($ele['wall_id']);
+
+	$ele['my_favourate'] = is_my_favourage_wall($myid, $ele['wall_id']);
 	$walls[] = $ele;
 	unset($ele);
 

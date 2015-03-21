@@ -112,9 +112,9 @@ if(isset($_POST['wall_id']) &&  $_POST['wall_id'] != '') {
 }
 
 $wall_name = '';
-
+$award_type = 0;
 if($wall_id > 0) {
-	if (!($stmt = $mysqli->prepare("select owner_userid, name from msgwall where wall_id = ?"))) {
+	if (!($stmt = $mysqli->prepare("select award_type, name from msgwall where wall_id = ?"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 		
@@ -129,11 +129,36 @@ if($wall_id > 0) {
 		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 	}
-	$stmt->bind_result($owner_user, $wall_name);
+	$stmt->bind_result($award_type, $wall_name);
 	$stmt->fetch();
 	$stmt->close();
 	
 	
+}
+
+$message_should_hongbao = 0;
+
+if($award_type > 0) {
+	if (!($stmt = $mysqli->prepare("select count(*) from  message where author_id = ? and wall_id = ?"))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+	}
+	if (!$stmt->bind_param("ii", $user_id, $wall_id)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	$stmt->bind_result($user_message_count);
+	$stmt->fetch();
+	$stmt->close();
+	
+	//if user have not add message at wall , then should send hongbao to user 
+	if($user_message_count == 0) {
+		$message_should_hongbao = 1;
+	}
 }
 
 if (!($stmt = $mysqli->prepare("INSERT INTO message (author_id, category_id, voice_url, duration, longitude, latitude, time, smile_id, original_message_id, image_url, image_color, text, new_time, platform,wall_id,wall_name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))) {
@@ -194,8 +219,23 @@ if (!$stmt->execute()) {
 $stmt->close();
 
 //update user score
-update_user_point($user_id, 3);
+$updated = update_user_point($user_id, 3);
 
+if($message_should_hongbao == 1) {
+	$get_hongbao = send_hongbao($user_id);
+	if($get_hongbao > 0) {
+		$content = "您获得一个支付宝红包，代码为：" . $get_hongbao;
+		tieer_to_user($user_id, $content);
+	}
+}
+if($award_type > 0 && $updated > 0) {
+	$get_hongbao = send_hongbao($user_id);
+	if($get_hongbao > 0) {
+		$content = "您获得一个支付宝红包，代码为：" . $get_hongbao;
+		tieer_to_user($user_id, $content);
+	}
+}
+/**
 if($wall_id > 0) {
 	//notification
 	$zero_id = 0;
@@ -256,7 +296,7 @@ if($wall_id > 0) {
 
 //notify follow user
 $follow_users = array();
-if($get_follow = $mysqli->query("select follow_userid from userfollow where user_id = $user_id")) {
+if($get_follow = $mysqli->query("select user_id from userfollow where follow_userid = $user_id")) {
 	while($follow = $get_follow->fetch_row()) {
 		$follow_users[] = $follow[0];
 	}
@@ -285,7 +325,7 @@ foreach($follow_users as $follow_id) {
 	}
 	}
 }
-
+**/
 
 if (!($stmt = $mysqli->prepare("SELECT m.*,u.* FROM message m,userinfo u  WHERE m.author_id = u.user_id and message_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -316,15 +356,17 @@ $stmt->fetch();
 
 $stmt->close();
 
+update_receive_count($message_id);
 
 //push 
 if($wall_id > 0) {
-	// if($get_nick = $mysqli->query("SELECT nickname FROM userinfo where user_id = $user_id")) {
-		// $nickname = $get_nick->fetch_row()[0];
-	// }
-	// else {
-			// printf("Error: %s\n", $mysqli->error);
-	// }
+	if(!$mysqli->query("update msgwall set newmsg_count = newmsg_count + 1, message_count = message_count + 1 where wall_id = $wall_id")) {
+		printf("Error: %s\n", $mysqli->error);
+	}
+	if(!$mysqli->query("update msgwallfavourates set newmsg_count = newmsg_count + 1 where wall_id = $wall_id")) {
+		printf("Error: %s\n", $mysqli->error);
+	}
+	
 	if($get_push = $mysqli->query("SELECT push_registration FROM user where user_id = $owner_user")) {
 		$push_registration = $get_push->fetch_row()[0];
 	}
@@ -339,9 +381,9 @@ if($wall_id > 0) {
 	
 		$data.= '&app_key='.$app_key;
 		$data.= '&receiver_type='.$receive_type;
-		$data.= '&receiver_value='.$receive_value;
+		$data.= '&receiver_value='.$push_registration;
 	
-		$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
+		$verification_code = $send_no.$receive_type.$push_registration.$mast_secret;
 	
 		$data.='&verification_code='.md5($verification_code);
 		$data.='&msg_type='.$msg_type;
@@ -350,17 +392,10 @@ if($wall_id > 0) {
 		$data.='&msg_content='.json_encode($ca);
 		$data.='&platform='.$platform;
 		$data.='&apns_production='.$apns_production;
+		
+		curl_post($data, $push_url);
 	
-		$ch = curl_init();
 	
-		curl_setopt($ch,CURLOPT_URL,$push_url);
-		curl_setopt($ch,CURLOPT_POST,1);
-	
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		//$response = curl_exec($ch);
-		//echo $response;
-		curl_exec($ch);
 	}
 	
 }

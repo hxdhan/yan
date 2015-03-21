@@ -105,6 +105,7 @@ while($stmt->fetch()) {
 	$user = get_userinfo($c['author_id']);
 	
 	$c = array_merge($c,$user);
+	update_receive_count($c['message_id']);
 	$results[] = $c;
 	unset($c);
 }

@@ -35,6 +35,8 @@ if(isset($_POST['radius']) && doubleval($_POST['radius']) > 0) {
 	$radius = doubleval($_POST['radius']);
 }
 
+$radius = 5;
+
 $web_url = '';
 if(isset($_POST['web_url']) && $_POST['web_url'] != '') {
 	$web_url = $_POST['web_url'];

@@ -26,7 +26,7 @@ if(isset($_POST['count']) && intval($_POST['count']) > 0 ) {
 	$count = $_POST['count'] + 0 ;
 }
 
-if (!($stmt = $mysqli->prepare("select w.* from msgwall w, msgwallfavourates f where w.wall_id = f.wall_id and f.user_id =? and w.wall_id < ? order by w.wall_id desc limit ? "))) {
+if (!($stmt = $mysqli->prepare("select w.*,f.newmsg_count from msgwall w, msgwallfavourates f where w.wall_id = f.wall_id and f.user_id =? and f.favourate_id < ? order by f.favourate_id desc limit ? "))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
@@ -58,7 +58,7 @@ while($stmt->fetch()) {
 		$ele[$key] = $val; 
 	}
 	$ele['favourate_count'] = get_wallfavourate_count($ele['wall_id']);
-	$ele['message_count'] = get_wallmsg_count($ele['wall_id']);
+	
 	$results[] = $ele;
 	
 }

@@ -31,6 +31,7 @@ if(isset($_POST['info']) && $_POST['info'] != '') {
 }
 
 if(isset($_POST['radius']) && doubleval($_POST['radius']) > 0 ) {
+	$_POST['radius'] = 5.0;
 	$sql_array[] = "radius = ?";
 	$par_type .= 'd';
 	$param[] = &$_POST['radius'];
@@ -142,7 +143,7 @@ $stmt->fetch();
 $stmt->close();
 
 $result['favourate_count'] = get_wallfavourate_count($result['wall_id']);
-$result['message_count'] = get_wallmsg_count($result['wall_id']);
+
 
 $mysqli->close();
 

@@ -11,6 +11,15 @@ if(empty($_POST['longitude']) || empty($_POST['latitude'])  ) {
 	exit (json_encode($ret));
 }
 
+$myid = 0;
+if(isset($_POST['myid']) && intval($_POST['myid']) > 0 ) {
+
+	$myid = $_POST['myid'] + 0 ;
+}
+else {
+	$myid = $user['user_id'];
+}
+
 $longitude = $_POST['longitude'] + 0 ;
 $latitude = $_POST['latitude'] + 0 ;
 
@@ -59,8 +68,8 @@ $minLon = $longitude - rad2deg($distance/$R/cos(deg2rad($latitude)));
 if (!($stmt = $mysqli->prepare("SELECT w.*,acos(sin(?)*sin(radians(w.latitude)) + cos(?)*cos(radians(w.latitude))*cos(radians(w.longitude)-?)) * ? AS distance
 FROM
 	msgwall w
-	
-	ORDER BY distance ASC limit ? "))) {
+where message_count > 2	and recommand_level > 0
+	ORDER BY recommand_level desc, message_count/(distance + 0.001) desc limit ? "))) {
 $ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 exit (json_encode($ret));	
 
@@ -102,7 +111,8 @@ while($stmt->fetch()) {
 		$ele[$key] = $val;
 	}
 	$ele['favourate_count'] = get_wallfavourate_count($ele['wall_id']);
-	$ele['message_count'] = get_wallmsg_count($ele['wall_id']);
+	
+	$ele['my_favourate'] = is_my_favourage_wall($myid, $ele['wall_id']);
 	$all_walls[] = $ele;
 	
 }

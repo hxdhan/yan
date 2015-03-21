@@ -85,6 +85,35 @@ elseif($content_type === 1) {
 
 }
 
+$auto_reply = 0;
+
+if($receive_userid == 1) {
+  //send chat to tieer
+	//check chat one hour
+	$one_hour_ago = $time - 60 * 60;
+	
+	if (!($stmt = $mysqli->prepare("select count(*) from  usrchat where user_id = ? and receive_userid = ? and time > ? "))) {
+		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+		exit (json_encode($ret));	
+	}
+	if (!$stmt->bind_param("iii", $receive_userid, $user_id, $one_hour_ago)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+	$stmt->bind_result($should_auto);
+	$stmt->fetch();
+	$stmt->close();
+	
+	if($should_auto == 0) {
+		//no reply 
+		$auto_reply = 1; 
+	}
+}
+
 
 if (!($stmt = $mysqli->prepare("INSERT INTO  usrchat (user_id,receive_userid, longitude,latitude,chat_content,duration, content_type, time) values (?,?,?,?,?,?,?,?) "))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
@@ -131,8 +160,14 @@ if (!$stmt->execute()) {
 
 $stmt->close();
 
+if($auto_reply = 1) {
+	$content = "是我做得不够好吗？请指正，我会努力改正的。你提出的问题我会在24小时之内响应。";
+	tieer_to_user($user_id, $content);
+}
+
 
 //notifications . only one chat data notifaction
+/**
 $n_type = $noti_type['chat'];
 
 if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $user_id AND type = '$n_type' ")) {
@@ -150,6 +185,8 @@ else {
 if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, type, time) VALUES ($receive_userid, $user_id, '$n_type', $time)")) {
 	printf("Error: %s\n", $mysqli->error);
 }
+
+**/
 
 if($get_nickname = $mysqli->query("SELECT nickname FROM userinfo WHERE user_id = $user_id")) {
 	$nickname = $get_nickname->fetch_assoc()['nickname'];
@@ -198,17 +235,17 @@ if(!empty($receive_value)) {
 	$data.='&platform='.$platform;
 	$data.='&apns_production='.$apns_production;
 	
+	curl_post($data, $push_url);
+	//$ch = curl_init();
 
-	$ch = curl_init();
+	//curl_setopt($ch,CURLOPT_URL,$push_url);
+	//curl_setopt($ch,CURLOPT_POST,1);
 
-	curl_setopt($ch,CURLOPT_URL,$push_url);
-	curl_setopt($ch,CURLOPT_POST,1);
-
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	//$response = curl_exec($ch);
 	//echo $response;
-	curl_exec($ch);
+	///curl_exec($ch);
 
 }
 $mysqli->close();

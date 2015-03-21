@@ -69,7 +69,7 @@ call_user_func_array(array($stmt, 'bind_result'), $bindVarsArray);
 
 $results = array();
 
-if (!($stmt1 = $mysqli->prepare("SELECT nickname,photo_url,gender,birthday,description,expert_type FROM userinfo WHERE user_id = ?"))) {
+if (!($stmt1 = $mysqli->prepare("SELECT nickname,photo_url,gender,birthday,description,expert_type,grade,point FROM userinfo WHERE user_id = ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
@@ -93,7 +93,7 @@ while($stmt->fetch()) {
 				exit (json_encode($ret));
 			}
 			
-			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description,$expert_type);
+			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description,$expert_type,$grade,$point);
 			while($stmt1->fetch()) {
 				
 				$c['nickname'] = $nickname;
@@ -102,6 +102,8 @@ while($stmt->fetch()) {
 				$c['birthday'] = $birthday;
 				$c['description'] = $description;
 				$c['expert_type'] = $expert_type;
+				$c['grade'] = $grade;
+				$c['point'] = $point;
 			}
 		}
 		
@@ -117,7 +119,7 @@ while($stmt->fetch()) {
 				exit (json_encode($ret));
 			}
 			
-			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description,$expert_type);
+			$stmt1->bind_result($nickname,$photo_url,$gender,$birthday,$description,$expert_type,$grade,$point);
 			while($stmt1->fetch()) {
 				
 				$c['touser_nickname'] = $nickname;

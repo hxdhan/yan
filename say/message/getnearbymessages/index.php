@@ -65,7 +65,7 @@ if(isset($_POST['gender'])) {
 }
 
 //sort method
-$sort_method = 'optimal';
+$sort_method = 'time';
 
 if(isset($_POST['sort_method'])) {
 	if($_POST['sort_method'] === 'distance') {
@@ -637,7 +637,7 @@ while($stmt->fetch()) {
 	$user = get_userinfo($ele['author_id']);
 	
 	$ele = array_merge($ele,$user);
-	
+	update_receive_count($ele['message_id']);
 	$results[] = $ele;
 }
 

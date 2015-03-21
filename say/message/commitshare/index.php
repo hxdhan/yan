@@ -53,32 +53,12 @@ if (strcasecmp($platform, 'pengyouquan') == 0) {
 		if($rets = $mysqli->query("select * from message where author_id = $user_id and message_id = $message_id and category_id in (102)")) {
 				//send gift message
 				if($rets->num_rows > 0) {
-						$tieer_id = 1;
-						$receive_userid = $user_id;
-						$longitude = 116.339889;
-						$latitude = 40.029367;
-						$content = "亲爱的贴客大人，贴儿小妞儿在此鞠躬感谢你参加贴儿的有奖活动哦！稍后会有获奖信息的通知~敬请期待！";
-						$duration = 0;
-						$content_type = 0;
-						$time = time();
-						if (!($stmt = $mysqli->prepare("INSERT INTO  usrchat (user_id,receive_userid, longitude,latitude,chat_content,duration, content_type, time) values (?,?,?,?,?,?,?,?) "))) {
-							$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
-							exit (json_encode($ret));	
-							
-						}
-
-						if (!$stmt->bind_param("iiddsiii", $tieer_id, $receive_userid,$longitude, $latitude, $content,$duration,$content_type,$time)) {
-							$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
-							exit (json_encode($ret));
-						}
-
-						if (!$stmt->execute()) {
-							$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
-							exit (json_encode($ret));
-						}
-						$stmt->close();
+						
+						$content = "亲爱的贴友，贴儿小妞儿在此鞠躬感谢你参加贴儿的有奖活动哦！稍后会有获奖信息的通知~敬请期待！";
+						tieer_to_user ($user_id, $content);
 						
 						//notifications . only one chat data notifaction
+						/**
 						$n_type = $noti_type['chat'];
 
 						if($rets = $mysqli->query("SELECT * FROM usrnotification WHERE user_id = $receive_userid AND active_userid = $tieer_id AND type = '$n_type' ")) {
@@ -96,7 +76,7 @@ if (strcasecmp($platform, 'pengyouquan') == 0) {
 						if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, type, time) VALUES ($receive_userid, $tieer_id, '$n_type', $time)")) {
 							printf("Error: %s\n", $mysqli->error);
 						}
-
+						**/
 						
 						if($get_registration = $mysqli->query("SELECT push_registration FROM user WHERE user_id = $receive_userid")) {
 							$receive_value = $get_registration->fetch_assoc()['push_registration'];
@@ -129,13 +109,15 @@ if (strcasecmp($platform, 'pengyouquan') == 0) {
 							$data.='&platform='.$platform;
 							$data.='&apns_production='.$apns_production;
 							
-							$ch = curl_init();
-							curl_setopt($ch,CURLOPT_URL,$push_url);
-							curl_setopt($ch,CURLOPT_POST,1);
+							curl_post($data, $push_url);
+							
+							//$ch = curl_init();
+							//curl_setopt($ch,CURLOPT_URL,$push_url);
+							//curl_setopt($ch,CURLOPT_POST,1);
 
-							curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-							curl_exec($ch);
+							//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+							//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+							//curl_exec($ch);
 
 						}
 				}

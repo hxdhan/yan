@@ -67,5 +67,3 @@ $ret['status'] = 1;
 $ret['ErrorMsg'] = '';
 
 exit (json_encode($ret));
- 
-?>

@@ -234,6 +234,15 @@ if (!$mysqli->commit()) {
 }
 
 $stmt->close();
+$mysqli->autocommit(TRUE);
+if(empty($nickname)) {
+	$content = "谢天谢地你来了！从此你可以在“身边”的专栏里撒野发贴儿，还可以任性地“收藏”感兴趣的专栏。惊喜还在后头，很快你就能开辟自己的专栏了！我还会悄悄告诉你总和你擦肩而过的Ta！";
+}
+else {
+	$content = $nickname."，谢天谢地你来了！从此你可以在“身边”的专栏里撒野发贴儿，还可以任性地“收藏”感兴趣的专栏。惊喜还在后头，很快你就能开辟自己的专栏了！我还会悄悄告诉你总和你擦肩而过的Ta！";
+}
+tieer_to_user ($user_id, $content);
+
 $mysqli->close();
 
 $ret['status'] = 1;

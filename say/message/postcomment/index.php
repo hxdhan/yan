@@ -261,17 +261,19 @@ if($get_user = $mysqli->query("SELECT u.push_registration,m.author_id FROM user 
 			$data.='&msg_content='.json_encode($c);
 			$data.='&platform='.$platform;
 			$data.='&apns_production='.$apns_production;
+			
+			curl_post($data, $push_url);
 
-			$ch = curl_init();
+			//$ch = curl_init();
 
-			curl_setopt($ch,CURLOPT_URL,$push_url);
-			curl_setopt($ch,CURLOPT_POST,1);
+			//curl_setopt($ch,CURLOPT_URL,$push_url);
+			//curl_setopt($ch,CURLOPT_POST,1);
 
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			//$response = curl_exec($ch);
 			//echo $response;
-			curl_exec($ch);
+			//curl_exec($ch);
 		}
 	}
 }
@@ -302,16 +304,17 @@ if($touser_id > 0 && $touser_id != $user_id) {
 			$data.='&platform='.$platform;
 			$data.='&apns_production='.$apns_production;
 
-			$ch = curl_init();
+			curl_post($data, $push_url);
+			//$ch = curl_init();
 
-			curl_setopt($ch,CURLOPT_URL,$push_url);
-			curl_setopt($ch,CURLOPT_POST,1);
+			//curl_setopt($ch,CURLOPT_URL,$push_url);
+			//curl_setopt($ch,CURLOPT_POST,1);
 
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			//$response = curl_exec($ch);
 			//echo $response;
-			curl_exec($ch);
+			///curl_exec($ch);
 			
 		}
 	}

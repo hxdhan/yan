@@ -6,7 +6,7 @@ if(!check_login()) {
 	exit (json_encode($ret));
 }
 
-if(empty($_POST['wall_id'])) {
+if(!isset($_POST['wall_id'])) {
 	$ret['ErrorMsg'] = '参数错误';
 	exit (json_encode($ret));
 }
@@ -35,7 +35,7 @@ else {
 }
 
 
-if (!($stmt = $mysqli->prepare("select m.*,acos(sin(radians(m.latitude))*sin(radians(w.latitude)) + cos(radians(m.latitude))*cos(radians(w.latitude))*cos(radians(w.longitude)-radians(m.longitude))) * 6371 AS distance from message m , msgwall w where m.wall_id = w.wall_id and m.wall_id = ? and m.message_id < ? order by m.message_id desc limit ?"))) {
+if (!($stmt = $mysqli->prepare("select * from message where wall_id = ? and message_id < ? order by message_id desc limit ?"))) {
 	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 	exit (json_encode($ret));	
 		
@@ -74,6 +74,8 @@ while($stmt->fetch()) {
 	$user = get_userinfo($ele['author_id']);
 	
 	$ele = array_merge($ele,$user);
+	
+	update_receive_count($ele['message_id']);
 	
 	$messages[] = $ele;
 }

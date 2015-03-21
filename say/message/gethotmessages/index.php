@@ -39,7 +39,7 @@ else {
 
 if($category_id == 0) {
 	if($gender == 'A') {
-		if (!($stmt = $mysqli->prepare("SELECT * FROM message ORDER BY (like_count*10 + comment_count*20 + receive_count) desc LIMIT ? "))) {
+		if (!($stmt = $mysqli->prepare("SELECT * FROM message ORDER BY (like_count*2 + comment_count + receive_count * 0.01 - 30 * (UNIX_TIMESTAMP() - time)/(60*60*24) + recommand_level) desc LIMIT ? "))) {
 			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 			exit (json_encode($ret));	
 			
@@ -51,7 +51,7 @@ if($category_id == 0) {
 		}
 	}
 	else {
-		if (!($stmt = $mysqli->prepare("SELECT m.* FROM message m,userinfo ui where m.author_id = ui.user_id and ui.gender = ? ORDER BY (m.like_count*10 + m.comment_count*20 + m.receive_count) DESC LIMIT ? "))) {
+		if (!($stmt = $mysqli->prepare("SELECT m.* FROM message m,userinfo ui where m.author_id = ui.user_id and ui.gender = ? ORDER BY (m.like_count*2 + m.comment_count + m.receive_count * 0.01 - 30 * (UNIX_TIMESTAMP() - m.time)/(60*60*24) + recommand_level) DESC LIMIT ? "))) {
 			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 			exit (json_encode($ret));	
 			
@@ -90,6 +90,7 @@ if($category_id == 0) {
 		$ele['like_status'] = get_like_status($ele['message_id'],$myid);
 		$user = get_userinfo($ele['author_id']);
 		$ele = array_merge($ele,$user);
+		update_receive_count($ele['message_id']);
 		$results[] = $ele;
 	}
 	
@@ -104,7 +105,7 @@ if($category_id == 0) {
 }
 else {
 	if($gender == 'A') {
-		if (!($stmt = $mysqli->prepare("SELECT * FROM message where category_id in $cat ORDER BY (like_count*10 + comment_count*20 +receive_count) DESC LIMIT ? "))) {
+		if (!($stmt = $mysqli->prepare("SELECT * FROM message where category_id in $cat ORDER BY (like_count*2 + comment_count + receive_count * 0.01 - 30 * (UNIX_TIMESTAMP() - time)/(60*60*24) + recommand_level) DESC LIMIT ? "))) {
 			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 			exit (json_encode($ret));	
 			
@@ -116,7 +117,7 @@ else {
 		}
 	}
 	else {
-		if (!($stmt = $mysqli->prepare("SELECT m.* FROM message m,userinfo ui where m.author_id = ui.user_id and ui.gender = ? and m.category_id in $cat ORDER BY (m.like_count*10 + m.comment_count*20 + m.receive_count) DESC LIMIT ? "))) {
+		if (!($stmt = $mysqli->prepare("SELECT m.* FROM message m,userinfo ui where m.author_id = ui.user_id and ui.gender = ? and m.category_id in $cat ORDER BY (m.like_count*2 + m.comment_count + m.receive_count * 0.01 - 30 * (UNIX_TIMESTAMP() - m.time)/(60*60*24) + recommand_level) DESC LIMIT ? "))) {
 			$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 			exit (json_encode($ret));	
 			
@@ -153,6 +154,7 @@ else {
 		$ele['like_status'] = get_like_status($ele['message_id'],$myid);
 		$user = get_userinfo($ele['author_id']);
 		$ele = array_merge($ele,$user);
+		update_receive_count($ele['message_id']);
 		$results[] = $ele;
 	}
 	
