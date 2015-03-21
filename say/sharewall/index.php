@@ -6,49 +6,55 @@ if(empty($_GET['id']) ) {
 
 //是否要分享自己的
 
-$message_id = $_GET['id'] + 0 ;
+$wall_id = $_GET['id'] + 0 ;
 
-if($get_message = $mysqli->query("select * from message where message_id = {$message_id}")) {
-	$message = $get_message->fetch_assoc();
+
+if($get_wall = $mysqli->query("select * ,(select count(*) from msgwallfavourates where wall_id = {$wall_id}) as f_count from msgwall where wall_id = {$wall_id}")) {
+	$wall = $get_wall->fetch_assoc();
+}
+else {
+	printf("error: %s", $mysqli->error);
 }
 
-if(empty($message)) {
+
+if(empty($wall)) {
 	header("Content-type: text/html; charset=utf-8"); 
-	exit('该留言不存在，或者已删除!');
+	exit('该专栏不存在，或者已删除!');
 }
 
-if($get_user = $mysqli->query("select nickname,photo_url from userinfo where user_id = {$message['author_id']}")) {
-	$user = $get_user->fetch_assoc();
-}
-
-if(empty($user)) {
-	header("Content-type: text/html; charset=utf-8"); 
-	exit('没有user');
-}
-
-if($get_cat = $mysqli->query("SELECT name FROM msgwall WHERE wall_id = {$message['wall_id']} ")) {
-	$category = $get_cat->fetch_row()[0];
-	
-}
-
-if(empty($category)) {
-	$category = "随便说说";
-}
-
-/**
-if($get_recomm = $mysqli->query("select *,like_count*10 + comment_count*20 +receive_count as order_count from message where time > UNIX_TIMESTAMP(date_sub(now(), interval 1 day)) and message_id <> {$message['message_id']} order by order_count desc limit 2")) {
-	$recomm = array();
-	while($r = $get_recomm->fetch_assoc()) {
-		if($get_ruser = $mysqli->query("select nickname, photo_url from userinfo where user_id = {$r['author_id']}")) {
-			$ruser = $get_ruser->fetch_assoc();
+$messages = array();
+if($get_message = $mysqli->query("select * from message where wall_id = {$wall_id} order by message_id desc limit 10")) {
+  
+	while($message = $get_message->fetch_assoc()) {
+		
+		if($get_user = $mysqli->query("select nickname,photo_url from userinfo where user_id = {$message['author_id']}")) {
+			$user = $get_user->fetch_assoc();
+			$message = array_merge($message, $user);
+			$messages[] = $message;
 		}
-		$r = array_merge($r,$ruser);
-		$recomm[] = $r;
+		else {
+			printf("error: %s", $mysqli->error);
+		}
+		
 	}
-	//var_dump($recomm);
+
+}
+else {
+	printf("error: %s", $mysqli->error);
 }
 
-**/
+
+
+
+$pstr = implode("','",array_reduce($messages, function($carry, $item){
+  //var_dump($carry);
+	$carry[] = $item['voice_url'] ;
+	return $carry;
+}));
+$pstr = "'".$pstr."'";
+
+
+
 
 
 define("a", 6378245.0); 
@@ -89,7 +95,7 @@ function transformLon($x, $y)
      return $ret; 
 } 
 
-$trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
+$trans_loc = GetMarsGSCoord($wall['latitude'], $wall['longitude']);
 
 
 
@@ -101,7 +107,7 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 
-<title>分享</title>
+<title>专栏分享</title>
 <link href="css/style.css" type="text/css" rel="stylesheet" />
 <script language="javascript" src="http://webapi.amap.com/maps?v=1.2&key=11bb7d7579acf8302f8cff6aa53ac8b4"></script>
 <script language="javascript" src="http://lib.sinaapp.com/js/jquery/2.0.3/jquery-2.0.3.min.js"></script>
@@ -125,69 +131,132 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 </div>
 
 </div>
-<div class="banner">
-<a href="http://a.app.qq.com/o/simple.jsp?pkgname=com.bu.yuyan"><img id="banner" src="images/banner.png"/></a>
+<div class="wall_image">
+<div class="w_image">
+<img id="w_image" src="<?php echo $wall['image_url'];?> ">
+<div class="ww_name">
+<img id="zlzl" src="images/zlzl.png"/>
+<div class="wall_name">
+<?php echo $wall['name'];?>
 </div>
-<div class="info">
+<div class="wall_name1">
+关注      &nbsp;&nbsp;<span style="color:#ffa200"><?php echo $wall['f_count'];?></span>  &nbsp;&nbsp;贴儿 &nbsp;&nbsp;    <span style="color:#ffa200"><?php echo $wall['message_count'];?></span>
+</div>
+</div>
+</div>
+<div class="wall_info">
+<a href="/say/sharewall/wall.php?id=<?php echo $wall_id;?>"><img id="wall_info" src="images/info.png"></a>
+</div>
+</div>
+<div class="zlweizhi">
+<img id="zlweizhi" src="images/zlweizhi.png">
+</div>
+<div class="map" id="map" style="height:80px;overflow: hidden;">
+</div>
+<div class="zltr">
+<img id="zltr" src="images/zltr.png">
+</div>
+<div class="recommand">
+<?php
+$index = 0;
+$count = count($messages);
 
-<div class="user">
-<!--
-<img id="user-bg" src='images/user-bg.png'/>
--->
-<img id="user-image" src='<?php echo $user['photo_url'];?>'/>
-
+for($index=0, $count=count($messages);$index < $count; $index++)  {
+?>
+<div class="recommand-left">
+<div class="user-left">
+<div class="rec-left">
+<img id="rec-user" src='<?php echo $messages[$index]['photo_url'];?>'>
 </div>
-<div class="user-name">
-<?php echo $user['nickname'];?>
+<div class="rec-right">
+<div class="rec-time">
+<?php echo time_elapsed_string($messages[$index]['time']);?>
 </div>
-<div class="loc">
-<img id="loc" src='images/loc.png'/>
-<div class="loc-text" id="loc-text">
-海淀区
+<div class="rec-username">
+<?php echo my_truncate($messages[$index]['nickname'],4) ;?>
 </div>
 </div>
-<?php if($message['image_url'] != '') { ?>
+</div>
+<div class="rec-info">
+<?php
+if($messages[$index]['image_url'] != '') {
+?>
+<img id="rec-image" src='<?php echo $messages[$index]['image_url'];?>'/>
+<?php if($messages[$index]['duration'] > 0) { ?>
 <div>
-<img id="myimg" src='<?php echo $message['image_url'];?>'/>
-</div>
-<?php }  else { ?>
-<div class="blank">
-
-</div>
-<?php } ?>
-<?php if($message['duration'] > 0) { ?>
-<div>
-<img id="play-bg" src='images/play-bg.png'/>
-
+<img id="rec-playbg" src='images/rec-playbg.png'/>
 </div>
 <div>
-<img id="play" onclick="javascript:start();" src='images/start.png'/>
+<img class="rec-play" id="play<?php echo $index;?>" onclick="javascript:start(<?php echo $index;?>);" src='images/start.png'/>
 </div>
-<?php } ?>
-<div class="category">
-<?php echo htmlentities('# '.$category);?>
-</div>
+<?php }?>
+<?php
+}
+?>
 <div class="message_text">
-<?php echo htmlentities($message['text']);?>
+<?php echo $messages[$index]['text'];?>
 </div>
-<div class="extra-info">
-<div class="extra-left">
-<img id="extra-left" src='images/time.png'/>
-<?php echo time_elapsed_string($message['time']);?>
-</div>
-<div class="extra-right">
-<div class="like">
-<img id="like" src='images/like.png'/>
-<?php echo $message['like_count'];?>
-</div>
-<div class="ting">
-<img id="ting" src='images/ting.png'/>
-<?php echo $message['receive_count'];?>
+<hr class="rec-hr"/>
+<div class="rec-footer">
+<img id="r-like" src='images/view.png'/>
+<div class="rec-liken">
+
+<?php echo $messages[$index]['receive_count'];?>
 </div>
 </div>
 </div>
 </div>
-<div class="map" id="map" style="height:75px;overflow: hidden;">
+<?php
+ if($index++ < $count -1) {
+  
+?>
+<div class="recommand-right">
+<div class="user-left">
+<div class="rec-left">
+<img id="rec-user" src='<?php echo $messages[$index]['photo_url'];?>'>
+</div>
+<div class="rec-right">
+<div class="rec-time">
+<?php echo time_elapsed_string($messages[$index]['time']);?>
+</div>
+<div class="rec-username">
+<?php echo my_truncate($messages[$index]['nickname'],4) ;?>
+</div>
+</div>
+</div>
+<div class="rec-info">
+<?php
+if($messages[$index]['image_url'] != '') {
+?>
+<img id="rec-image" src='<?php echo $messages[$index]['image_url'];?>'/>
+<?php if($messages[$index]['duration'] > 0) { ?>
+<div>
+<img id="rec-playbg" src='images/rec-playbg.png'/>
+</div>
+<div>
+<img class="rec-play" id="play<?php echo $index;?>" onclick="javascript:start(<?php echo $index;?>);" src='images/start.png'/>
+</div>
+<?php } ?>
+<?php
+}
+?>
+<div class="message_text">
+<?php echo $messages[$index]['text'];?>
+</div>
+<hr class="rec-hr"/>
+<div class="rec-footer">
+<img id="r-like" src='images/view.png'/>
+<div class="rec-liken">
+
+<?php echo $messages[$index]['like_count'];?>
+</div>
+</div>
+</div>
+</div>
+<?php
+}
+} 
+?>
 </div>
 
 
@@ -209,12 +278,12 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 <a href='http://a.app.qq.com/o/simple.jsp?pkgname=com.bu.yuyan'><img id="download" src='images/download.png'/></a>
 </div>
 </div>
-</div>
 </body>
 </html>
 <script type="text/javascript">
 	mapObj = new AMap.Map("map",{
 	center:new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>), 
+	
 	level:14,
 	dragEnable:false,
 	zoomEnable:false,
@@ -251,7 +320,7 @@ function geocoder_CallBack(data) {
 	province = data.regeocode.addressComponent.province;
 	district = data.regeocode.addressComponent.district;
 	
-	document.getElementById("loc-text").innerHTML =  district;
+	
 	
 	  //自定义点标记内容   
 	var markerContent = document.createElement("div");
@@ -262,11 +331,11 @@ function geocoder_CallBack(data) {
 	//点标记中的图标
 	var markerImg= document.createElement("img");
      markerImg.className="markerlnglat";
-	 markerImg.src="/say/share/images/pin.png";	
+	 markerImg.src="/say/sharewall/images/loc.png";	
 	 markerContent.appendChild(markerImg);
 	 var markerImg1= document.createElement("img");
      markerImg1.className="markerlnglat1";
-	 markerImg1.src="/say/share/images/pin-bg.png";	
+	 markerImg1.src="/say/sharewall/images/pin-bg.png";	
 	 markerContent.appendChild(markerImg1);
 	 
 	 //点标记中的文本
@@ -285,51 +354,55 @@ function geocoder_CallBack(data) {
 		content:markerContent   //自定义点标记覆盖物内容
 	});
 	marker.setMap(mapObj);  //在地图上添加点
+	mapObj.setFitView();
+	
 }
 
 </script>
 
 <script type="text/javascript">
-<?php if(isset($message['voice_url'])) { ?>
-	var video;
- function start() {
-		
-	
-	if(video) {
-		
-		if(video.paused) {
-      video.play();
-			document.getElementById("play").src="images/stop.png";
+var video;
+var play_index;
+var play_array = new Array(<?php echo $pstr;?>);
+function start(index) {
+  if(video) {
+	  if(play_index == index) {
+			if(video.paused) {
+				video.play();
+				document.getElementById("play"+index).src="images/stop.png";
 			
+			}
+			else {
+				
+				video.pause();
+				document.getElementById("play"+index).src="images/start.png";
+			}
 		}
-		else {
-      
-			video.pause();
-      document.getElementById("play").src="images/start.png";
+		if(play_index != index) {
+			  video.pause();
+				document.getElementById("play"+play_index).src="images/start.png";
+				
+				play_index = index;
+				video = document.createElement('audio');
+				video.setAttribute('src',play_array[index]);
+				video.load();
+				video.play();
+				video.addEventListener('ended', fini, false);
+				document.getElementById("play"+index).src="images/stop.png";
 		}
-	} 
+	}
 	else {
-		
+		play_index = index;
 		video = document.createElement('audio');
-  	video.setAttribute('src',"<?php echo $message['voice_url'];?>");
-  	video.load();
-  	video.play();
+		video.setAttribute('src',play_array[index]);
+		video.load();
+		video.play();
 		video.addEventListener('ended', fini, false);
-		document.getElementById("play").src="images/stop.png";
-		$.post("/say/message/increasemessagereceivecount/",
-				{
-					login_token : '1852689bc9090133494bc638ea528491',
-					message_id : <?php echo $message['message_id'];?>,
-					
-				},
-				function(data,status){
-					//alert(data);
-				}
-			);
-  }
+		document.getElementById("play"+index).src="images/stop.png";
+	}
 }
+
 function fini() {
-	document.getElementById("play").src="images/start.png";
+	document.getElementById("play"+play_index).src="images/start.png";
 }
-<?php } ?>
 </script>

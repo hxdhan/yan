@@ -1,0 +1,33 @@
+@charset "utf-8";
+/* CSS Document */
+body,div,ul,li,input,p,dl,dt,dd,table,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;}
+body{font-size:10px;font-family:"微软雅黑";background:#fff;}
+a{color:#000;}
+a,
+a:hover{text-decoration:none;}
+em,i,city{font-style:normal;}
+img{border:none;}
+.l{float:left;}
+.r{float:right;}
+ul{list-style-type:none;}
+.clear:after,
+.area:after{content:".";visibility:hidden;height:0;display:block;clear:both;}
+.clear,
+.area{zoom:1;}
+/*
+body{width:320px;margin:auto}
+.head{width:320px}
+
+
+*/
+.background {text-align:center;position:relative}
+#background {width:100%;background-size:100%;}
+.icon{margin-top:-405px}
+#icon{width:118px;background-size:100%;}
+.download{margin-top:20px}
+#download{width:210px;background-size:100%;}
+.gz{margin-top:50px}
+#gz{width:49px;background-size:100%;}
+#sina{width:16px;background-size:100%;margin-left:10px}
+#qq{width:13px;background-size:100%;margin-left:10px}
+.footer{margin-top:30px}
