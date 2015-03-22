@@ -47,6 +47,13 @@ else {
 	echo '<a href="mark.php" class="list-group-item">增加水印</a>';
 }
 
+if (preg_match('#^/admin/hongbao#',$req_string)) {
+	echo '<a href="#" class="list-group-item active">增加阿里红包</a>';
+}
+else {
+	echo '<a href="hongbao.php" class="list-group-item">增加阿里红包</a>';
+}
+
 echo '</div>';
 echo '</div>';
 

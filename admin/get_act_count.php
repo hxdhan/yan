@@ -29,7 +29,7 @@ if($get_like_count = $mysqli->query("select count(distinct like_userid) from `li
 	$result['like_count'] = $all_count - $like_count;
 }
 
-if($get_chat_count = $mysqli->query("select count(distinct user_id) from usrchat ")) {
+if($get_chat_count = $mysqli->query("select count(distinct user_id) from usrchat where receive_userid <> 1 ")) {
 	$chat_count = $get_chat_count->fetch_row()[0];
 	$result['chat_count'] = $all_count - $chat_count;
 }
