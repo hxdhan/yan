@@ -87,7 +87,7 @@ elseif($content_type === 1) {
 
 $auto_reply = 0;
 
-if($receive_userid == 1) {
+if($receive_userid === 1) {
   //send chat to tieer
 	//check chat one hour
 	$one_hour_ago = $time - 60 * 60;
@@ -160,7 +160,7 @@ if (!$stmt->execute()) {
 
 $stmt->close();
 
-if($auto_reply = 1) {
+if($auto_reply === 1) {
 	$content = "是我做得不够好吗？请指正，我会努力改正的。你提出的问题我会在24小时之内响应。";
 	tieer_to_user($user_id, $content);
 }
@@ -196,22 +196,7 @@ if($get_registration = $mysqli->query("SELECT push_registration FROM user WHERE 
 	$receive_value = $get_registration->fetch_assoc()['push_registration'];
 }
 if(!empty($receive_value)) {
-	$data = '';
-	$send_no = get_push_id();
-
-	$data.= 'sendno='.$send_no;
-
-	$data.= '&app_key='.$app_key;
-	$data.= '&receiver_type='.$receive_type;
-	$data.= '&receiver_value='.$receive_value;
-
-	$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-
-
-
-	$data.='&verification_code='.md5($verification_code);
-	$data.='&msg_type='.$msg_type;
-  
+	
 	if(intval($chat['content_type']) === 0) {
 		
 		$charset = 'UTF-8';
@@ -220,32 +205,16 @@ if(!empty($receive_value)) {
 		if(mb_strlen($ct, $charset) > $length) {
 			$ct = mb_substr($ct, 0, $length - 3, $charset) . '...';
 		}
-		$c['n_content'] = $nickname.':'.$ct;
+		$send = $nickname.':'.$ct;
 		
 	}
 	elseif(intval($chat['content_type']) === 1) {
-		$c['n_content'] = $nickname.':[语音]';
+		$send = $nickname.':[语音]';
 	}
 	elseif(intval($chat['content_type']) === 2) {
-		$c['n_content'] = $nickname.':[图片]';
+		$send = $nickname.':[图片]';
 	}
-  
-	$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'chat','user_param_1'=>$user_id);
-	$data.='&msg_content='.json_encode($c);
-	$data.='&platform='.$platform;
-	$data.='&apns_production='.$apns_production;
-	
-	curl_post($data, $push_url);
-	//$ch = curl_init();
-
-	//curl_setopt($ch,CURLOPT_URL,$push_url);
-	//curl_setopt($ch,CURLOPT_POST,1);
-
-	//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-	//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	//$response = curl_exec($ch);
-	//echo $response;
-	///curl_exec($ch);
+	push_message($receive_value, $send, "chat");
 
 }
 $mysqli->close();

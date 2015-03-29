@@ -124,6 +124,7 @@ $stmt->fetch();
 $stmt->close();
 
 //notifications
+
 if($get_author = $mysqli->query("SELECT author_id FROM message WHERE message_id = $message_id")) {
 	$author = $get_author->fetch_row()[0];
 	if($author != $user_id) {
@@ -137,14 +138,15 @@ if($get_author = $mysqli->query("SELECT author_id FROM message WHERE message_id 
 			}
 		}
 		
-		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, message_id, type, time) VALUES ($author, $user_id, $message_id, '$n_type', $time)")) {
+		if(!$mysqli->query("INSERT INTO usrnotification (user_id, active_userid, message_id, type, time, new) VALUES ($author, $user_id, $message_id, '$n_type', $time, 0)")) {
 			printf("Error: %s\n", $mysqli->error);
 		}
 	}
 	
 }
+
 //update user score
-update_user_point($user_id, 1);
+//update_user_point($user_id, 1);
 
 
 

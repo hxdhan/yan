@@ -241,39 +241,9 @@ if($get_user = $mysqli->query("SELECT u.push_registration,m.author_id FROM user 
 		$receive_value = $v['push_registration'];
 		$auth = $v['author_id'];
 		if($user_id != $auth) {
-			$data = '';
-			$send_no = get_push_id();
-
-			$data.= 'sendno='.$send_no;
-
-			$data.= '&app_key='.$app_key;
-			$data.= '&receiver_type='.$receive_type;
-			$data.= '&receiver_value='.$receive_value;
-
-			$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-
-
-
-			$data.='&verification_code='.md5($verification_code);
-			$data.='&msg_type='.$msg_type;
-			$c['n_content'] = $nickname.'评论了你的贴儿';
-			$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'comment');
-			$data.='&msg_content='.json_encode($c);
-			$data.='&platform='.$platform;
-			$data.='&apns_production='.$apns_production;
 			
-			curl_post($data, $push_url);
-
-			//$ch = curl_init();
-
-			//curl_setopt($ch,CURLOPT_URL,$push_url);
-			//curl_setopt($ch,CURLOPT_POST,1);
-
-			//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			//$response = curl_exec($ch);
-			//echo $response;
-			//curl_exec($ch);
+			$send = $nickname.'评论了你的贴儿';
+			push_message($receive_value, $send, "comment");
 		}
 	}
 }
@@ -283,38 +253,10 @@ if($touser_id > 0 && $touser_id != $user_id) {
 		if($v = $get_user->fetch_assoc()) {
 			$receive_value = $v['push_registration'];
 			
-			$data = '';
-			$send_no = get_push_id();
-
-			$data.= 'sendno='.$send_no;
-
-			$data.= '&app_key='.$app_key;
-			$data.= '&receiver_type='.$receive_type;
-			$data.= '&receiver_value='.$receive_value;
-
-			$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-
-
-
-			$data.='&verification_code='.md5($verification_code);
-			$data.='&msg_type='.$msg_type;
-			$c['n_content'] = $nickname.'回复了你的评论';
-			$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'reply');
-			$data.='&msg_content='.json_encode($c);
-			$data.='&platform='.$platform;
-			$data.='&apns_production='.$apns_production;
-
-			curl_post($data, $push_url);
-			//$ch = curl_init();
-
-			//curl_setopt($ch,CURLOPT_URL,$push_url);
-			//curl_setopt($ch,CURLOPT_POST,1);
-
-			//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			//$response = curl_exec($ch);
-			//echo $response;
-			///curl_exec($ch);
+			if(!empty($receive_value)) {
+				$send = $nickname.'回复了你的评论';
+				push_message($receive_value, $send, "reply");
+			}
 			
 		}
 	}

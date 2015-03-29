@@ -21,14 +21,10 @@ $host = 'http://121.199.36.8';
 
 $target = "http://42.121.81.183:18002/send.do";
 
-$push_url = 'http://api.jpush.cn:8800/v2/push/';
+$push_url = 'https://api.jpush.cn/v3/push';
 
 $mast_secret = '2a0aef65eb700d8eb6bec39b';
 $app_key = '336e00d6925644d3b2566b45';
-$receive_type = 5;
-$msg_type = 1;
-$platform = 'android,ios';
-$apns_production = 0;
 
 $pwd_salt = '1bu2bu';
 
@@ -150,10 +146,10 @@ function curl_post($curlPost,$url){
 		$running = 'idc';
 		//get response???
 		curl_multi_exec($mh,$running);
-		
+		curl_multi_remove_handle($mh, $curl);
+		curl_multi_close($mh);
 		//close??
 }
-
 			
 
 function check_path () {
@@ -519,7 +515,7 @@ function get_grade () {
 }
 
 function update_user_point ($user, $point) {
-	global $ret, $noti_type, $mem_host, $mem_port, $mysqli, $app_key, $receive_type, $mast_secret, $msg_type, $platform, $apns_production, $push_url;
+	global $ret, $noti_type, $mem_host, $mem_port, $mysqli;
 	
 	$grade = get_grade();
 	if($get_userpoint = $mysqli->query("select grade, point from userinfo where user_id = " . $user)) {
@@ -534,12 +530,9 @@ function update_user_point ($user, $point) {
 	if($u_grade > 15) {
 		$grade[$u_grade] = $grade[15];
 	}
-	$upgrade = 0;
-	if($u_point + $point >= $grade[$u_grade]) {
-		//upgrade
-		
-		$upgrade = 1;
 	
+	if($u_point + $point >= $grade[$u_grade]) {
+		//upgrade	
 		if($mysqli->query("update userinfo set grade = grade + 1 , point = ". ($u_point + $point - $grade[$u_grade]) . " where user_id = {$user}")) {
 		
 		}
@@ -547,14 +540,26 @@ function update_user_point ($user, $point) {
 				printf("%s",$mysqli->error);
 		}
 		//send chat
-		/**
+		
 		$user_id = 1;
 		$receive_userid = $user;
+		/**
 		$longitude = 116.339889;
 		$latitude = 40.029367;
 		**/
 		$content = "恭喜你，你的等级提升到" . ($u_grade + 1) . "级了";
 		tieer_to_user($user, $content);
+		
+		if(check_user_hongbong($user) > 0) {
+			
+				$get_hongbao = send_hongbao($user);
+				if(!empty($get_hongbao)) {
+					$cont = "你获得一个由贴儿赠与的支付宝红包，口令是 $get_hongbao ，请在4小时内兑换。也请给贴儿发个5星评价";
+					tieer_to_user($user, $cont);
+				}
+
+		}
+		
 		/**
 		$duration = 0;
 		$content_type = 0;
@@ -606,43 +611,10 @@ function update_user_point ($user, $point) {
 		}
 		
 		if(!empty($receive_value)) {
-			$data = '';
-			$send_no = get_push_id();
-
-			$data.= 'sendno='.$send_no;
-
-			$data.= '&app_key='.$app_key;
-			$data.= '&receiver_type='.$receive_type;
-			$data.= '&receiver_value='.$receive_value;
-
-			$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-
-
-
-			$data.='&verification_code='.md5($verification_code);
-			$data.='&msg_type='.$msg_type;
-  	
-			$c['n_content'] = $nickname.':'.$content;
-		
-			$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'chat','user_param_1'=>$user_id);
-			$data.='&msg_content='.json_encode($c);
-			$data.='&platform='.$platform;
-			$data.='&apns_production='.$apns_production;
-
-			$ch = curl_init();
-
-			curl_setopt($ch,CURLOPT_URL,$push_url);
-			curl_setopt($ch,CURLOPT_POST,1);
-
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			$mh = curl_multi_init();
-			curl_multi_add_handle($mh,$curl);
-			$running = 'idc';
-			curl_multi_exec($mh,$running);
-			//$response = curl_exec($ch);
-			//echo $response;
-			//curl_exec($ch);
+			
+			
+			$send = $nickname.':'.$content;
+			push_message($receive_value, $send, "upgrade");
 
 		}
 		
@@ -657,7 +629,7 @@ function update_user_point ($user, $point) {
 		}
 	}
 	
-	return $upgrade;
+	
 	
 	//$memcache = memcache_connect($mem_host, $mem_port);
 	
@@ -710,7 +682,7 @@ function is_my_favourage_wall($user_id, $wall_id) {
 	while($stmt->fetch()) {
 
 	}
-	
+	$stmt->close();
 	return $count;
 
 }
@@ -747,6 +719,9 @@ function send_hongbao ($user_id) {
 	global $ret, $mysqli;
 	$curr_time = time();
 	$hongbao = 0;
+	if(stop_user_hongbong($user_id) > 0) {
+	  return $hongbao;
+	}
 	$two_days_ago = $curr_time - 60 * 60 * 24 * 2;
 	$query = "update eventredenvelope set AliLuckyMoneyCode = @hongbao := AliLuckyMoneyCode , PostStatus = 1, PostUserId = {$user_id}, PostTime = {$curr_time} where PostStatus = 0 and CreateTime > {$two_days_ago} limit 1 ; select @hongbao;";
 	if($mysqli->multi_query($query)) {
@@ -769,20 +744,97 @@ function send_hongbao ($user_id) {
 	return $hongbao;
 }
 
-function request($url, $payload) {
+function stop_user_hongbong($user_id) {
+	global $ret, $mysqli;
 
-  $cmd = "curl -X POST -H 'Content-Type: application/json'";
-  $cmd.= " -d '" . $payload . "' " . "'" . $url . "'";
+	if (!($stmt = $mysqli->prepare("select stop from user where user_id = ? "))) {
+	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+	exit (json_encode($ret));	
+		
+	}
 
-  if (!$this->debug()) {
-    $cmd .= " > /dev/null 2>&1 &";
-  }
+	if (!$stmt->bind_param("i",  $user_id)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
 
-  exec($cmd, $output, $exit);
-  return $exit == 0;
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	$stmt->bind_result($count);
+
+	while($stmt->fetch()) {
+
+	}
+	
+	$stmt->close();
+	
+	return $count;
+
 }
 
-function push_message($from_id = 0, $to_id, $mesage, $type = 0, $user_param) {
+function check_user_hongbong($user_id) {
+	global $ret, $mysqli;
+
+	if (!($stmt = $mysqli->prepare("select count(*) from message m, msgwall w where m.wall_id = w.wall_id and m.author_id = ? and w.award_type = 1 "))) {
+	$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
+	exit (json_encode($ret));	
+		
+	}
+
+	if (!$stmt->bind_param("i",  $user_id)) {
+		$ret['ErrorMsg'] =  "Binding parameters failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	if (!$stmt->execute()) {
+		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
+		exit (json_encode($ret));
+	}
+
+	$stmt->bind_result($count);
+
+	while($stmt->fetch()) {
+
+	}
+	
+	$stmt->close();
+	
+	return $count;
+
+}
+
+function push_message($to, $mesage, $m_type) {
+	global $push_url;
+	$platform = array();
+	$platform[] = "android";
+	$platform[] = "ios";
+	$data['platform'] = $platform;
+	$registration_id[]= $to;
+	$data["audience"]["registration_id"] = $registration_id;
+	$ios["alert"] = $mesage;
+	$ios["sound"] = "drop.caf";
+	$ios["badge"] = "+1";
+	$extra["type"] = $m_type;
+	//$extra["user_param_1"] = $to;
+	$ios["extra"] = $extra;
+
+	$data["notification"]["ios"] = $ios;
+
+	$android["alert"] = $mesage;
+	$android["title"] = "贴儿";
+	$android["builder_id"] = 1;
+	$android["extra"] = $extra;
+	$data["notification"]["android"] = $android;
+	$send = json_encode($data);
+	$cmd = "curl --insecure -X POST -H 'Content-Type: application/json' -u '336e00d6925644d3b2566b45:2a0aef65eb700d8eb6bec39b'";
+  $cmd.= " -d '" . $send . "' " . "'" . $push_url . "'";
+  $cmd .= " > /dev/null 2>&1 &";
+  exec($cmd, $output, $exit);
+  return $exit == 0;
+
 
 }
  

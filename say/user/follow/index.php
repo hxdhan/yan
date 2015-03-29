@@ -196,39 +196,10 @@ if($get_followuser = $mysqli->query("SELECT push_registration FROM user where us
 	$receive_value = $get_followuser->fetch_assoc()['push_registration'];
 	//echo 'receive value is'.$receive_value;
 	if(!empty($receive_value)) {
-		$data = '';
-		$send_no = get_push_id();
-	
-		$data.= 'sendno='.$send_no;
-	
-		$data.= '&app_key='.$app_key;
-		$data.= '&receiver_type='.$receive_type;
-		$data.= '&receiver_value='.$receive_value;
-	
-		$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-	
-	
-	
-		$data.='&verification_code='.md5($verification_code);
-		$data.='&msg_type='.$msg_type;
-		$ca['n_content'] = $nickname.'关注了你';
-		$ca["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'follow');
-		$data.='&msg_content='.json_encode($ca);
-		$data.='&platform='.$platform;
-		$data.='&apns_production='.$apns_production;
 		
-		curl_post($data, $push_url);
+		$send = $nickname.'关注了你';
+		push_message($receive_value, $send, "follow");
 	
-		//$ch = curl_init();
-	
-		//curl_setopt($ch,CURLOPT_URL,$push_url);
-		//curl_setopt($ch,CURLOPT_POST,1);
-	
-		//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		//$response = curl_exec($ch);
-		//echo $response;
-		//curl_exec($ch);
   }
 }
 

@@ -82,42 +82,15 @@ if (strcasecmp($platform, 'pengyouquan') == 0) {
 							$receive_value = $get_registration->fetch_assoc()['push_registration'];
 						}
 						if(!empty($receive_value)) {
-							$data = '';
-							$send_no = get_push_id();
-
-							$data.= 'sendno='.$send_no;
-
-							$data.= '&app_key='.$app_key;
-							$data.= '&receiver_type='.$receive_type;
-							$data.= '&receiver_value='.$receive_value;
-
-							$verification_code = $send_no.$receive_type.$receive_value.$mast_secret;
-
-							$data.='&verification_code='.md5($verification_code);
-							$data.='&msg_type='.$msg_type;
-							
+				
 							$charset = 'UTF-8';
 							$length = 40;
 							
 							if(mb_strlen($content, $charset) > $length) {
 								$content = mb_substr($content, 0, $length - 3, $charset) . '...';
 							}
-							$c['n_content'] = $content;
-								
-							$c["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'chat','user_param_1'=>$user_id);
-							$data.='&msg_content='.json_encode($c);
-							$data.='&platform='.$platform;
-							$data.='&apns_production='.$apns_production;
-							
-							curl_post($data, $push_url);
-							
-							//$ch = curl_init();
-							//curl_setopt($ch,CURLOPT_URL,$push_url);
-							//curl_setopt($ch,CURLOPT_POST,1);
-
-							//curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-							//curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-							//curl_exec($ch);
+							$send = $content;
+							push_message($receive_value, $send, "share");
 
 						}
 				}

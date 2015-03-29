@@ -18,7 +18,7 @@ ul{list-style-type:none;}
 body{background-color:#dddfe0}
 .header {background-color:#2f2f2f;height:70px}
 .header-left{float:left}
-.footer {background-color:#2f2f2f;height:70px}
+.footer {background-color:#2f2f2f;height:70px;margin-top:10px}
 #logo{width:48px;height:48px;background-size:100%;margin:12px 5px 5px 10px}
 .logo-left{float:left}
 #tieer{width:30px;height:14px;background-size:100%;margin-top:20px}
@@ -54,15 +54,16 @@ body{background-color:#dddfe0}
 .user{position:absolute}
 .loc{position:absolute;right:0px;top:15px}
 #loc{width:109px;height:33px;background-size:100%}
+.ahr{height:1px;background-color:#d8dfe2;margin-top: 5px;margin-bottom:5px}
 .loc-text{margin-top:-27px;margin-left:30px}
 .category{margin-top:10px}
-.message_text{text-align:left;padding-left:3px;padding-right:3px;color:#828282;font-size:14px;margin-top:10px}
-.recommand{overflow:hidden;margin-bottom:10px}
-.recommand-left{float:left;background-color:white;width:47%;overflow:hidden;border-radius: 10px;margin-top:10px;clear:left;margin-right:2%;margin-left:2%}
-.recommand-right{background-color:white;width:47%;overflow:hidden;border-radius: 10px;margin-top:10px;clear:right}
+.message_text{text-align:left;padding-left:15px;padding-right:3px;color:#828282;font-size:14px;margin-top:10px}
+.recommand{overflow:hidden;margin-bottom:10px;margin-top:10px}
+.recommand-left{float:left;width:47%;overflow:hidden;margin-left:2%;margin-right:2%}
+.recommand-right{width:47%;overflow:hidden;}
 #rec-user{width:39px;height:39px;background-size:100%;border-radius: 20px;}
 .rec-left{float:left;border-radius: 21px;background-color:#dcdcdc}
-.rec-time{color:#828282;font-size:14px}
+.rec-time{color:#828282;font-size:12px}
 .rec-username{font-size:14px}
 .rec-right{float:right;margin-left:5px}
 .user-left{float:left;margin-left:10px;margin-top:10px}
@@ -70,9 +71,9 @@ body{background-color:#dddfe0}
 #rec-image{width:130px;height:130px;margin-top:5px;border-radius: 75px;}
 #rec-playbg{margin-top:-20px;width:28px;height:28px;background-size:100%;}
 .rec-play{margin-top:-28px;width:29px;height:29px;background-size:100%}
-#r-like{float:left;margin-left:10px;width:22px;height:12px;background-size:100%;}
+#r-like{float:left;margin-left:15px;width:22px;height:12px;background-size:100%;}
 .rec-like{float:right;margin-right:5px}
-.rec-liken{float:right;margin-right:10px;color:#909090;font-size:12px}
+.rec-liken{float:right;margin-right:15px;color:#909090;font-size:12px}
 .rec-hr{border: 1px dashed #d8dfe2;margin:5px}
 #rc-text{width:30px;height:15px;background-size:100%;}
 .rc-text{margin-left:15px}
@@ -95,3 +96,5 @@ float: left;}
 .wall_info0{margin-left:15px;margin-top:10px}
 .wall_info1{margin-left:15px;color:#7c7c7c;margin-top:10px}
 #zlzl{width:33px;height:17px;background-size:100%}
+.content {background-color:white;border-radius: 10px;clear:left;margin-bottom:10px}
+.rec-footer{height:20px}

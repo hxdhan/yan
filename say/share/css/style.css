@@ -1,7 +1,7 @@
 @charset "utf-8";
 /* CSS Document */
 body,div,ul,li,input,p,dl,dt,dd,table,form,h1,h2,h3,h4,h5,h6{margin:0;padding:0;}
-body{font-size:16px;font-family:"微软雅黑";background:#fff;}
+body{font-size:16px;font-family:"Microsoft Yahei","sans-serif",arial,"Hiragino Sans GB";background:#fff;}
 a{color:#000;}
 a,
 a:hover{text-decoration:none;}
@@ -27,27 +27,28 @@ body{background-color:#dddfe0}
 #download{width:82px;height:31px;background-size:100%;margin:20px 15px 0 0}
 .banner{}
 #banner{width:100%;background-size:100%}
-.info{background-color:white;margin:20px 10px;text-align:center;border-radius: 15px;position:relative}
+.info{background-color:white;margin:20px 10px;text-align:center;border-radius: 10px;position:relative}
 #user-bg{width:46px;height:46px;background-size:100%;margin-top:-20px}
 #user-image{width:40px;height:40px;background-size:100%;border-radius: 23px;margin-top:-12px;border: 3px solid white;}
-.user-name{position:absolute;top:10px;left:50px}
+.user-name{position:absolute;top:10px;left:50px;color:#7c7c7c}
 #myimg{width:214px;height:214px;background-size:100%;margin-top:50px;border-radius: 107px;}
 #play-bg{width:39px;height:39px;background-size:100%;margin-top:-20px}
 #extra-left{width:20px;height:20px;background-size:100%;}
-.extra-info{margin-top:10px;height:30px}
-.extra-left{float:left;margin-left:20px;color:#828282}
-.extra-right{float:right;color:#828282}
+.extra-info{height:30px}
+.extra-left{float:left;margin-left:20px;color:#828282;font-size:14px}
+.extra-right{float:right;color:#828282;font-size:14px}
 .like{float:left;margin-right:20px}
 .ting{float:right;margin-right:20px}
-.message_text{text-align:left;padding-left:5px;padding-right:5px;margin-top:5px}
+.message_text{text-align:left;padding-left:15px;padding-right:5px;margin-top:5px;color:#656565}
 #like{width:20px;height:20px;background-size:100%;}
 #ting{width:20px;height:20px;background-size:100%;}
 #play{width:39px;height:39px;background-size:100%;margin-top:-40px}
 .user{position:absolute}
 .loc{position:absolute;right:0px;top:15px}
+.ahr{height:1px;background-color:#d8dfe2;margin-top: 10px;}
 #loc{width:109px;height:33px;background-size:100%}
 .loc-text{margin-top:-27px;margin-left:30px}
-.category{margin-top:10px;text-align:left;padding-left:5px}
+.category{margin-top:10px;text-align:left;padding-left:15px;color:#ffa200}
 .map{background-color:white;margin:10px;height:75px}
 .recommand{height:240px;margin:10px 10px 10px;}
 .recommand-left{float:left;background-color:white;width:48%;height:240px;border-radius: 15px;}

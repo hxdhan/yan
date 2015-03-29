@@ -51,7 +51,7 @@ $finfo = new finfo(FILEINFO_MIME_TYPE);
 
 $voice_url = '';
 
-if(isset($_FILES['voice'])) {
+if(isset($_FILES['voice']['tmp_name'])) {
 	
 	$ext = array_search($finfo->file($_FILES['voice']['tmp_name']),$alowed_voice);
 	if($ext === false) {
@@ -72,7 +72,7 @@ $allowed_image = array('jpg' => 'image/jpeg','png' => 'image/png','gif' => 'imag
 
 $image_url = '';
 
-if(isset($_FILES['image'])) {
+if(isset($_FILES['image']['tmp_name'])) {
 	
 	$ext = array_search($finfo->file($_FILES['image']['tmp_name']),$allowed_image);
 
@@ -114,7 +114,7 @@ if(isset($_POST['wall_id']) &&  $_POST['wall_id'] != '') {
 $wall_name = '';
 $award_type = 0;
 if($wall_id > 0) {
-	if (!($stmt = $mysqli->prepare("select award_type, name from msgwall where wall_id = ?"))) {
+	if (!($stmt = $mysqli->prepare("select owner_userid, award_type, name from msgwall where wall_id = ?"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
 		
@@ -129,7 +129,7 @@ if($wall_id > 0) {
 		$ret['ErrorMsg'] =  "Execute failed: (" . $stmt->errno . ") " . $stmt->error;
 		exit (json_encode($ret));
 	}
-	$stmt->bind_result($award_type, $wall_name);
+	$stmt->bind_result($owner_user, $award_type, $wall_name);
 	$stmt->fetch();
 	$stmt->close();
 	
@@ -138,7 +138,7 @@ if($wall_id > 0) {
 
 $message_should_hongbao = 0;
 
-if($award_type > 0) {
+if($award_type == 1 ) {
 	if (!($stmt = $mysqli->prepare("select count(*) from  message where author_id = ? and wall_id = ?"))) {
 		$ret['ErrorMsg'] =  "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;
 		exit (json_encode($ret));	
@@ -219,22 +219,16 @@ if (!$stmt->execute()) {
 $stmt->close();
 
 //update user score
-$updated = update_user_point($user_id, 3);
+update_user_point($user_id, 3);
 
 if($message_should_hongbao == 1) {
 	$get_hongbao = send_hongbao($user_id);
-	if($get_hongbao > 0) {
-		$content = "您获得一个支付宝红包，代码为：" . $get_hongbao;
+	if(!empty($get_hongbao)) {
+		$content = "你获得一个由贴儿赠与的支付宝红包，口令是 $get_hongbao ，请在4小时内兑换。也请给贴儿发个5星评价";
 		tieer_to_user($user_id, $content);
 	}
 }
-if($award_type > 0 && $updated > 0) {
-	$get_hongbao = send_hongbao($user_id);
-	if($get_hongbao > 0) {
-		$content = "您获得一个支付宝红包，代码为：" . $get_hongbao;
-		tieer_to_user($user_id, $content);
-	}
-}
+
 /**
 if($wall_id > 0) {
 	//notification
@@ -374,27 +368,10 @@ if($wall_id > 0) {
 			printf("Error: %s\n", $mysqli->error);
 	}
 	if(!empty($push_registration)) {
-		$data = '';
-		$send_no = get_push_id();
-	
-		$data.= 'sendno='.$send_no;
-	
-		$data.= '&app_key='.$app_key;
-		$data.= '&receiver_type='.$receive_type;
-		$data.= '&receiver_value='.$push_registration;
-	
-		$verification_code = $send_no.$receive_type.$push_registration.$mast_secret;
-	
-		$data.='&verification_code='.md5($verification_code);
-		$data.='&msg_type='.$msg_type;
-		$ca['n_content'] = '有人在你的墙上贴贴儿';
-		$ca["n_extras"] = array('ios'=>array('badge'=>1,'sound'=>'drop.caf','content-available'=>1),'type'=>'wallnew');
-		$data.='&msg_content='.json_encode($ca);
-		$data.='&platform='.$platform;
-		$data.='&apns_production='.$apns_production;
 		
-		curl_post($data, $push_url);
-	
+		$send = '有人在你的墙上贴贴儿';
+		
+		push_message($push_registration, $send, "wallnew");
 	
 	}
 	

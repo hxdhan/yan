@@ -154,17 +154,15 @@ $trans_loc = GetMarsGSCoord($wall['latitude'], $wall['longitude']);
 <img id="zltr" src="images/zltr.png">
 </div>
 
-
 <div class="recommand">
-<div class="recommand-left">
+
 <?php
 $index = 0;
 $count = count($messages);
 
 for($index=0, $count=count($messages);$index < $count; $index++)  {
-	if($index % 2 == 0) {
 ?>
-<div class="content">
+<div class="recommand-left">
 <div class="user-left">
 <div class="rec-left">
 <img id="rec-user" src='<?php echo $messages[$index]['photo_url'];?>'>
@@ -209,17 +207,10 @@ if($messages[$index]['image_url'] != '') {
 </div>
 </div>
 <?php
-	}
-}
-?>
-</div>
-<div class="recommand-right">
-<?php
-for($index=0, $count=count($messages);$index < $count; $index++)  {
-	if($index % 2 != 0) {
+ if($index++ < $count -1) {
   
 ?>
-<div class="content">
+<div class="recommand-right">
 <div class="user-left">
 <div class="rec-left">
 <img id="rec-user" src='<?php echo $messages[$index]['photo_url'];?>'>
@@ -267,7 +258,6 @@ if($messages[$index]['image_url'] != '') {
 }
 } 
 ?>
-</div>
 </div>
 
 

@@ -128,6 +128,8 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 <div class="banner">
 <a href="http://a.app.qq.com/o/simple.jsp?pkgname=com.bu.yuyan"><img id="banner" src="images/banner.png"/></a>
 </div>
+<div style="background-color:white;height:12px">
+</div>
 <div class="info">
 
 <div class="user">
@@ -170,6 +172,8 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 <div class="message_text">
 <?php echo htmlentities($message['text']);?>
 </div>
+<div class="ahr">
+</div>
 <div class="extra-info">
 <div class="extra-left">
 <img id="extra-left" src='images/time.png'/>
@@ -187,8 +191,7 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 </div>
 </div>
 </div>
-<div class="map" id="map" style="height:75px;overflow: hidden;">
-</div>
+
 
 
 <div class="footer">
@@ -212,82 +215,7 @@ $trans_loc = GetMarsGSCoord($message['latitude'], $message['longitude']);
 </div>
 </body>
 </html>
-<script type="text/javascript">
-	mapObj = new AMap.Map("map",{
-	center:new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>), 
-	level:14,
-	dragEnable:false,
-	zoomEnable:false,
-	}); 
-	
-	 // marker=new AMap.Marker({                  
-	 // icon:"http://121.199.36.8/say/sh/images/pin.png",
-	 // position:new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>)
-	 // });
-	 // marker.setTitle('清河翠微百货');
-	 // marker.setMap(mapObj);  
-	// marker=new AMap.Marker({                  
-	// icon:"http://121.199.36.8/say/sh/images/pin-bg.png",
-	// offset:new AMap.Pixel(15,-15),
-	// position:new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>),
-	// content:"清河翠微百货",
-	// });
-	// marker.setMap(mapObj); 
-	
-	
-	var lnglatXY = new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>);
-	var MGeocoder;
-	mapObj.plugin(["AMap.Geocoder"], function() {       
-        MGeocoder = new AMap.Geocoder({
-            radius: 10,
-            extensions: "base"
-        });
-        //返回地理编码结果
-        AMap.event.addListener(MGeocoder, "complete", geocoder_CallBack);
-        //逆地理编码
-        MGeocoder.getAddress(lnglatXY);
-    });
-function geocoder_CallBack(data) {
-	province = data.regeocode.addressComponent.province;
-	district = data.regeocode.addressComponent.district;
-	
-	document.getElementById("loc-text").innerHTML =  district;
-	
-	  //自定义点标记内容   
-	var markerContent = document.createElement("div");
-	markerContent.className = "marker";
-  //var markeri = document.createElement("div");
-	// markeri.className="marki";
-	 //markerContent.appendChild(markeri);
-	//点标记中的图标
-	var markerImg= document.createElement("img");
-     markerImg.className="markerlnglat";
-	 markerImg.src="/say/share/images/pin.png";	
-	 markerContent.appendChild(markerImg);
-	 var markerImg1= document.createElement("img");
-     markerImg1.className="markerlnglat1";
-	 markerImg1.src="/say/share/images/pin-bg.png";	
-	 markerContent.appendChild(markerImg1);
-	 
-	 //点标记中的文本
-	 var markerSpan = document.createElement("div");
-	 markerSpan.className="markspan";
-	 markerSpan.innerHTML = data.regeocode.addressComponent.township;
-	 markerContent.appendChild(markerSpan);
-	 
-	 
-	 
-	 marker = new AMap.Marker({
-		map:mapObj,
-		position:new AMap.LngLat(<?php echo $trans_loc['lng'];?>,<?php echo $trans_loc['lat'];?>), //基点位置
-		//offset:new AMap.Pixel(-18,-36), //相对于基点的偏移位置
-		draggable:false,  //是否可拖动
-		content:markerContent   //自定义点标记覆盖物内容
-	});
-	marker.setMap(mapObj);  //在地图上添加点
-}
 
-</script>
 
 <script type="text/javascript">
 <?php if(isset($message['voice_url'])) { ?>
