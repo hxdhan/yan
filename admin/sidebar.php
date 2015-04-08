@@ -54,6 +54,19 @@ else {
 	echo '<a href="hongbao.php" class="list-group-item">增加阿里红包</a>';
 }
 
+if (preg_match('#^/admin/daka#',$req_string)) {
+	echo '<a href="#" class="list-group-item active">打卡墙</a>';
+}
+else {
+	echo '<a href="daka.php" class="list-group-item">打卡墙</a>';
+}
+if (preg_match('#^/admin/edaka#',$req_string)) {
+	echo '<a href="#" class="list-group-item active">修改打卡墙</a>';
+}
+else {
+	echo '<a href="edaka.php" class="list-group-item">修改打卡墙</a>';
+}
+
 echo '</div>';
 echo '</div>';
 
